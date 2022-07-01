@@ -51,30 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	uint32_t ActualCompare;
 
-	ActualCompare = __HAL_TIM_GET_COMPARE(&htim4,TIM_CHANNEL_3);
-
-
-	if(GPIO_Pin == GPIO_PIN_0)
-	{
-		if(ActualCompare < MaxPwmVal)
-		{
-			ActualCompare = ActualCompare + ChangeStep;
-		}
-		__HAL_TIM_SET_COMPARE(&htim4,TIM_CHANNEL_3,ActualCompare);
-	}
-	if(GPIO_Pin == GPIO_PIN_1)
-	{
-		if(ActualCompare >= ChangeStep)
-		{
-			ActualCompare = ActualCompare - ChangeStep;
-		}
-		  __HAL_TIM_SET_COMPARE(&htim4,TIM_CHANNEL_3,ActualCompare);
-	}
-}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,6 +64,14 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_IncTick(void)
+{
+  uwTick += uwTickFreq;
+  DLTuc_UpdateTimeStampMs(uwTick);
+}
+
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	DLTuc_MessageTransmitDone();

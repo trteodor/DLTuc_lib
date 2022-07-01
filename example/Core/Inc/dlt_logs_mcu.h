@@ -78,20 +78,6 @@ typedef enum
 #define DLT_RING_BUFFER_SIZE 15
 
 
-
-/*
- ****************************************************************************************************
- * M_DLT Configuration defines end
- * SECTION START
- *****************************************************************************************************
- *****************************************************************************************************
- *
- * */
-
-
-
-
-
 /*
  ****************************************************************************************************
  * API Function prototypes section START
@@ -100,16 +86,6 @@ typedef enum
  *
  * */
 /*DLTuc - Data Log Trace microcontroler "u" micro*/
-
-
-
-/*
- ****************************************************************************************************
- * HW Depend function!!!!!
- *****************************************************************************************************
- *****************************************************************************************************
- *
- * */
 
 /*
  *@brief DLTuc_RegisterTransmitSerialDataCallback
@@ -128,6 +104,14 @@ void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8
   *
   * */
 void DLTuc_MessageTransmitDone(void);
+
+
+/*
+ *@brief DLTuc_UpdateTimeStampMs
+ *
+ *
+ * */
+void DLTuc_UpdateTimeStampMs(uint32_t Time);
 
 
 
@@ -155,16 +139,6 @@ void DLTuc_LogOut(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8
  *
  * */
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...); /*Typical most usefull DLT log function*/
-
-/*
- ****************************************************************************************************
- * API Function prototypes section END
- *****************************************************************************************************
- *****************************************************************************************************
- *
- * */
-
-
 
 
 /*
@@ -212,8 +186,8 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  *
  * */
 #define DEBUGL(log_level, str, ...)\
-	if((log_level) <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs((log_level), DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) str, ##__VA_ARGS__);\
+	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) str, ##__VA_ARGS__);\
 	}
 
 /*
@@ -225,8 +199,8 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  *
  * */
 #define DEBUGF(log_level, str, ...)\
-	if((log_level) <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs((log_level), DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s() "str, __FUNCTION__,##__VA_ARGS__);\
+	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s() "str, __FUNCTION__,##__VA_ARGS__);\
 	}
 
 /*
@@ -238,8 +212,8 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  *
  * */
 #define DEBUGFF(log_level, str, ...)\
-	if((log_level) <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs((log_level), DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FUN:%s() FILE:%s()  "str, __FUNCTION__,__FILE__,##__VA_ARGS__);\
+	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FUN:%s() FILE:%s()  "str, __FUNCTION__,__FILE__,##__VA_ARGS__);\
 	}
 
 /*

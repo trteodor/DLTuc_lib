@@ -15,11 +15,12 @@ This program is very useful to filtering, marking and we can do much more things
 
 If such arise and I will need debug logs from the microcontroller. Doubtful but possible.
 
-This library is very simple, and support only small part of dlt logs but in my opinion it's use full solution.
+This library is very simple, and support only small part of dlt logs but in my opinion it's use full solution. Many optimizations can be done, 
+if you want change something please feel free to create change pull request.
 
 **_Detailed instruction is in file: dlt_logs_mcu_lib_files/dlt_logs_mcu.h_**
 
-Provided example was tested on NUCLEO STM32F103RB board and DLT_Viewer 2.18 :
+Provided example was tested on NUCLEO STM32F103RB board and DLT_Viewer Release Tag  2.18 :
 
 ![NucleoScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/NucleoBoard.jpg)
 
@@ -35,3 +36,6 @@ https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_P
 https://qiita.com/takeoverjp/items/d7a9ad4e5f0b778308be
 
 https://medium.com/inatech/about-your-next-automotive-friendly-prototype-53ce5f2923e7
+
+
+#stm32 #dlt #viewer #debug #log #logs #mcu #microcontroller #data #log #diagnostic #and #trace

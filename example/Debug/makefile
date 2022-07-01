@@ -47,7 +47,7 @@ MAP_FILES += \
 dlt_logs_trivial_example.map \
 
 SIZE_OUTPUT += \
-default.size.stdout \
+dlt_logs_trivial_example_compiled_test.size.stdout \
 
 OBJDUMP_LIST += \
 dlt_logs_trivial_example.list \
@@ -65,7 +65,7 @@ dlt_logs_trivial_example.elf dlt_logs_trivial_example.map: $(OBJS) $(USER_OBJS) 
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+dlt_logs_trivial_example_compiled_test.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	arm-none-eabi-size  $(EXECUTABLES)
 	@echo 'Finished building: $@'
 	@echo ' '
@@ -77,7 +77,7 @@ dlt_logs_trivial_example.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_T
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout dlt_logs_trivial_example.elf dlt_logs_trivial_example.list dlt_logs_trivial_example.map
+	-$(RM) dlt_logs_trivial_example.elf dlt_logs_trivial_example.list dlt_logs_trivial_example.map dlt_logs_trivial_example_compiled_test.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

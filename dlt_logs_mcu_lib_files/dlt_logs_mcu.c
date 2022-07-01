@@ -65,7 +65,8 @@ static uint8_t DltMessagesTab[DLT_RING_BUFFER_SIZE][DLT_MAX_SINGLE_MESSAGE_SIZE]
 
 static volatile uint8_t TransmitReadyStateFlag = true; /*TmpFromDma for example*/
 
-
+static uint32_t TimestampValue =1000;
+//TestValue += 1000;
 
 static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size);
 static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
@@ -188,10 +189,10 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
 	DltDebugTmpBuf[11]= ((uint8_t*)&TempEcuId)[0];
 
 	/*Time stamp*/
-	DltDebugTmpBuf[12]= 0x00; /**/
-	DltDebugTmpBuf[13]= 0x23; /**/
-	DltDebugTmpBuf[14]= 0x4b; /**/
-	DltDebugTmpBuf[15]= 0x33; /**/
+	DltDebugTmpBuf[12]= ((uint8_t*)&TimestampValue)[3];
+	DltDebugTmpBuf[13]= ((uint8_t*)&TimestampValue)[2];
+	DltDebugTmpBuf[14]= ((uint8_t*)&TimestampValue)[1];
+	DltDebugTmpBuf[15]= ((uint8_t*)&TimestampValue)[0];
 
 	/*Extended header --verbose | type serial*/
 //	DltDebugTmpBuf[16]= 0x41; /**/
@@ -381,5 +382,15 @@ uint16_t Size;
 	}
 }
 
+
+/*
+ *@brief DLTuc_UpdateTimeStampMs
+ *
+ *
+ * */
+void DLTuc_UpdateTimeStampMs(uint32_t Time)
+{
+	TimestampValue = (Time*10);
+}
 
 
