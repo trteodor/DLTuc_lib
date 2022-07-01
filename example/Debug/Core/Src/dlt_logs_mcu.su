@@ -1,0 +1,7 @@
+../Core/Src/dlt_logs_mcu.c:84:18:DLT_RB_Read	24	static
+../Core/Src/dlt_logs_mcu.c:110:18:DLT_RB_Write	32	static
+../Core/Src/dlt_logs_mcu.c:146:13:PrepareHoleHeader	32	static
+../Core/Src/dlt_logs_mcu.c:246:6:DLTuc_RegisterTransmitSerialDataCallback	24	static
+../Core/Src/dlt_logs_mcu.c:275:6:DLTuc_MessageTransmitDone	16	static
+../Core/Src/dlt_logs_mcu.c:310:6:DLTuc_LogOut	32	static
+../Core/Src/dlt_logs_mcu.c:340:6:DLTuc_LogOutVarArgs	44	static
