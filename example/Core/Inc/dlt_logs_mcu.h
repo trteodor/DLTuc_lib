@@ -129,7 +129,7 @@ void DLTuc_UpdateTimeStampMs(uint32_t Time);
  * Simple function to send DLT LOG
  *
  * */
-void DLTuc_LogOut(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t data[],uint16_t size);
+//void DLTuc_LogOut(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t data[],uint16_t size); /*Please don't use actually - fix required*/
 
 
 /*

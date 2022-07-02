@@ -7,7 +7,6 @@
 
 #include "stdio.h"
 #include "stdint.h"
-#include "usart.h"
 
 #include "stdbool.h"
 #include <stdarg.h>
@@ -286,6 +285,7 @@ void DLTuc_MessageTransmitDone(void)
 		{
 			ExtSerialTrDataFunctionCb(DltLogDroppedInfoBuffer, DLtLogDroppedSize);
 		}
+		return;
 	}
 
 	if(DLT_RB_Read(&DltRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
@@ -306,7 +306,7 @@ void DLTuc_MessageTransmitDone(void)
  * @brief DLTuc_LogOut
  *
  * Simple function to send DLT LOG
- *
+ * TODO: Fix rquired - log drop not handled and transmit flag
  * */
 void DLTuc_LogOut(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t data[],uint16_t size)
 {

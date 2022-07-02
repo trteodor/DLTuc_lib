@@ -1,6 +1,9 @@
 # MCU_DLT_LOGS_TRIVIAL_LIB
-A trivial library to send DLT logs from MCU like STM32 or any other MCU, via serial communication interface like USART/UART. 
+A trivial library to send DLT (debug) logs from MCU like STM32 or any other MCU, via serial communication interface like USART/UART. 
 
+**_Demo video:_**
+
+https://www.youtube.com/watch?v=oruxyXiptlI
 
 To view these logs i used the DLT-Viewer:
  * https://github.com/COVESA/dlt-viewer
@@ -15,7 +18,7 @@ This program is very useful to filtering, marking and we can do much more things
 
 If such arise and I will need debug logs from the microcontroller. Doubtful but possible.
 
-This library is very simple, and support only small part of dlt logs but in my opinion it's use full solution. Many optimizations can be done, 
+This library is very simple, and support only small part of dlt logs possibilities but in my opinion it's usefull solution. Neverless Many optimizations can be done, 
 if you want change something please feel free to create change pull request.
 
 **_Detailed instruction is in file: dlt_logs_mcu_lib_files/dlt_logs_mcu.h_**
