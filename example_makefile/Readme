@@ -1,0 +1,15 @@
+###########################################################################
+#To use this build system you have to add in your environment: (path)
+# arm-none-eabi-gcc  
+# OpenOCD
+# ruby
+# gcovr 5.0 or newer
+# make 3.81 or newer
+# gcc (for desktop)
+# Maybe something else (but probably no)
+###########################################################################
+
+
+This example using my very old implementation of UART with DMA, but it is working solution
+
+In File: application/DltLogLibTests/main.c is the main example file, you should start analyse this code from this position
