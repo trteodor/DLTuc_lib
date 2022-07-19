@@ -24,9 +24,11 @@ if you want change something please feel free to create change pull request.
 **_Detailed instruction is in file: dlt_logs_mcu_lib_files/dlt_logs_mcu.h_**
 
 Provided examples was tested on NUCLEO STM32F103RB board and DLT_Viewer Release Tag  2.18 :
-**_Actually only example called "example_makefile" is maintance because this approach is very convience for me and should be platform independent_**
+
 
 ![NucleoScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/NucleoBoard.jpg)
+
+**_Actually only example called "example_makefile" is maintance because this approach is very convience for me and should be platform independent_**
 
 You are ready to start adventure with this example when you have this tools in your environment: (environment variables)!
 

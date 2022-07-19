@@ -1,4 +1,0 @@
-../Core/Src/tim.c:30:6:MX_TIM4_Init	64	static
-../Core/Src/tim.c:88:6:HAL_TIM_Base_MspInit	24	static
-../Core/Src/tim.c:103:6:HAL_TIM_MspPostInit	40	static
-../Core/Src/tim.c:130:6:HAL_TIM_Base_MspDeInit	16	static

@@ -38,8 +38,8 @@ int Main(void)
 
 	Uart2HandlerPointer = UART2_Init115200(SerialUartTransmitDMATransmitEndCallBack);
 
-	GPIO_Pin_Cfg(GPIOA,Px0,gpio_mode_output_OD_2MHz);
-	GPIO_PinReset(GPIOA, Psm0);
+	GPIO_Pin_Cfg(GPIOA,Px5,gpio_mode_output_PP_2MHz);
+	GPIO_PinSet(GPIOA, Psm5);
 
 	DLTuc_RegisterTransmitSerialDataCallback(LLSerialTrDataFunctionC);
 
@@ -52,17 +52,21 @@ int Main(void)
 		DEBUGL(DL_INFO, "Log Drop testing3 :)  %d" , 5);
 		DEBUGL(DL_INFO, "Log Drop testing4 :)  %d" , 5);
 	}
+		DEBUGL(DL_INFO, "Dropped log...  %d" , 5);
+		DEBUGL(DL_FATAL, "Dropped log...   %d" , 5);
+	DelayMs(100);
 
 	while(1)
 	{
 		/*Send example Logs in loop...*/
-		DEBUGL(DL_ERROR, "Hello DLT Again %d Arg1 %d Arg2 :%d" , 2565, 56,23);
+		DEBUGL(DL_ERROR, "Hello DLT Again Arg1 %d Arg2 :%d" , 2565, 56);
 		DEBUGFF(DL_FATAL, "GENERALLY DLT Again1");
 		DEBUGL(DL_DEBUG, "AnotherTest DLT Again",0);
 		DEBUGL(DL_VERBOSE, "AnotherTest2 DLT Again",0);
 		DelayMs(1000);
 		DEBUGL(DL_WARN, "Orange is sweet fruit");
 		DelayMs(1000);
+		tooglePIN(GPIOA, Psm5);
 	}
 }
 
