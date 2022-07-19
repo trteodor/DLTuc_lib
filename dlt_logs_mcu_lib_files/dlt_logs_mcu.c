@@ -248,7 +248,7 @@ void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionCb(uint
 	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionCb;
 
 	/*Preapre LOG DROPPED Info Log*/
-	PrepareHoleHeader(DL_ERROR,0xDD,0xDD,sizeof(DltLogDroppedInfo) );
+	PrepareHoleHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );
 
 	/*Payload!!!*/
 	/*Copy payload text temporary*/
@@ -350,6 +350,10 @@ uint16_t Size;
 	PrepareHoleHeader(Level,AppId,ContextId,Size);
 	Size = Size +DLT_ACT_HOLE_HEADER_SIZE;
 
+	Size++;
+	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
+	Size++;
+	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
 
 	if(DLT_RB_Write(&DltRingBuffer,DltDebugTmpBuf, Size) == RB_OK)
 	{
