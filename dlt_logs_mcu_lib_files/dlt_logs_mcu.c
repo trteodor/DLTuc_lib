@@ -1,8 +1,9 @@
-
-
-/*Dlt Totally simple base logs from MCU lib propose */
-
-
+/*
+ * dlt_logs_mcu.c
+ *
+ *  Created on: 1 lip 2022
+ *      Author: teodor
+ */
 #include "dlt_logs_mcu.h"
 
 #include "stdio.h"
@@ -299,37 +300,6 @@ void DLTuc_MessageTransmitDone(void)
 	{
 		TransmitReadyStateFlag = true;
 	}
-}
-
-
-/*
- * @brief DLTuc_LogOut
- *
- * Simple function to send DLT LOG
- * TODO: Fix rquired - log drop not handled and transmit flag
- * */
-void DLTuc_LogOut(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t data[],uint16_t size)
-{
-
-	PrepareHoleHeader(Level,AppId,ContextId,size);
-
-	/*Payload!!!*/
-	/*Copy payload text temporary*/
-	for(int i=DLT_ACT_HOLE_HEADER_SIZE; i<size+DLT_ACT_HOLE_HEADER_SIZE; i++)
-	{
-		DltDebugTmpBuf[i]= data[i-DLT_ACT_HOLE_HEADER_SIZE];
-	}
-
-	/*Transmit data via uart*/
-	if(ExtSerialTrDataFunctionCb != NULL)
-	{
-		ExtSerialTrDataFunctionCb(DltDebugTmpBuf, size + 32);
-	}
-	else
-	{
-		while(1); /*Please Register the callback...*/
-	}
-
 }
 
 /*

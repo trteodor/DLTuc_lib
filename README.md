@@ -38,7 +38,7 @@ You are ready to start adventure with this example when you have this tools in y
 
     * make 3.81 or newer
 
-Then just call make in directory of this repository or project
+Finally just call make in directory of this repository or project
 
 
 # References

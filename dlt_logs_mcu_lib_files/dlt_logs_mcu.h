@@ -124,15 +124,6 @@ void DLTuc_UpdateTimeStampMs(uint32_t Time);
  * */
 
 /*
- * @brief DLTuc_LogOut
- *
- * Simple function to send DLT LOG
- *
- * */
-//void DLTuc_LogOut(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t data[],uint16_t size); /*Please don't use actually - fix required*/
-
-
-/*
  * @brief DLTuc_LogOutVarArgs(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
  *
  * Typical most usefull function to create DLT Log
@@ -200,7 +191,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  * */
 #define DEBUGF(log_level, str, ...)\
 	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s() "str, __FUNCTION__,##__VA_ARGS__);\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s() LOG: "str, __FUNCTION__,##__VA_ARGS__);\
 	}
 
 /*
@@ -213,7 +204,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  * */
 #define DEBUGFF(log_level, str, ...)\
 	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FUN:%s() FILE:%s()  "str, __FUNCTION__,__FILE__,##__VA_ARGS__);\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FILE:%s() FUN:%s() LOG: "str,__FILE__,__FUNCTION__,##__VA_ARGS__);\
 	}
 
 /*

@@ -12,4 +12,4 @@
 
 This example using my very old implementation of UART with DMA, but it is working solution
 
-In File: application/DltLogLibTests/main.c is the main example file, you should start analyse this code from this position
+In File: application/DltLogLibTests/Src/main.c is the main example file, you should start analyse this code from this position
