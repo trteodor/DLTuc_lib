@@ -114,27 +114,17 @@ void DLTuc_MessageTransmitDone(void);
 void DLTuc_UpdateTimeStampMs(uint32_t Time);
 
 
-
-/*
- ****************************************************************************************************
- * Api functions
- *****************************************************************************************************
- *****************************************************************************************************
- *
- * */
-
 /*
  * @brief DLTuc_LogOutVarArgs(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
  *
- * Typical most usefull function to create DLT Log
+ * Function to create DLT Log (Session id isn't supported)
  *
  * */
-void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...); /*Typical most usefull DLT log function*/
-
+void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
 
 /*
  ****************************************************************************************************
- * FEW USEFULL MACROS WHICH CAN BE USE FULL TO CRATE DEBUG LOGS
+ * FEW USEFULL MACROS WHICH TO CRATE DEBUG LOGS
  * SECTION START
  *****************************************************************************************************
  *****************************************************************************************************

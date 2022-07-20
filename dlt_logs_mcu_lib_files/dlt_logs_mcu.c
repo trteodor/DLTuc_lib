@@ -55,7 +55,7 @@ static uint8_t DltLogDroppedInfo[] = "LOG DROPPED!!!";
 static uint8_t DltLogDroppedInfoBuffer[60] = {0};
 static uint8_t DLtLogDroppedSize = 0;
 
-static uint8_t DltDebugTmpBuf[255]; /*Buffer used to prepare single message for OutPut Circular buffer*/
+static uint8_t DltDebugTmpBuf[DLT_MAX_SINGLE_MESSAGE_SIZE]; /*Buffer used to prepare single message for OutPut Circular buffer*/
 
 static uint8_t ActDltMessageCounter =0;
 
@@ -68,6 +68,7 @@ static volatile uint8_t TransmitReadyStateFlag = true; /*TmpFromDma for example*
 static uint32_t TimestampValue =1000;
 //TestValue += 1000;
 
+/*brief for each funtion is added above implemention... */
 static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size);
 static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
 static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize);
@@ -80,8 +81,13 @@ static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t 
  ********************************************************************************************
  ********************************************************************************************
  ********************************************************************************************
+/*
+ * @@brief DLT_RB_Write
+ * RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * MessageSize - size of the "DltLogData" (return value)
+ * MessagePointer - pointer to the message stored in RingBuffer (return value)
+ * 
  * */
-
 static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer)
 {
 	// Check if Tail hit Head
@@ -102,12 +108,13 @@ static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t
 	return RB_OK;
 }
 
-//
-// Write to Ring Buffer
-//
-// RingBuffer_t *Buf - pointer to Ring Buffer structure
-// uint8_t Value - a value to store in the buffer
-//
+/*
+ * @@brief DLT_RB_Write
+ * RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * *DltLogData - pointer to the data stored in RingBuffer
+ * MessageSize - size of the "DltLogData" 
+ * 
+ * */
 static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize)
 {
 	// Calculate new Head pointer value
@@ -140,7 +147,7 @@ static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t 
 /*
  * @@brief PrepareHoleHeader
  * A very stupid implementation of DLT Header - but it works fine
- *
+ * It is possible create dedicated bitfiels a structure but it require time...
  * refer to: https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_PRS_DiagnosticLogAndTraceProtocol.pdf
  *
  * */
@@ -225,10 +232,6 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
 }
 
 
-
-
-
-
 /*
  ****************************************************************************************************
  * API Function declarations section START
@@ -240,8 +243,8 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
 /*
  *@brief DLTuc_RegisterTransmitSerialDataCallback
  * IMPORTANT!!!!!
- *  This simple stack/library must have initialized by "DLTuc_RegisterTransmitSerialDataCallback"
- *  As a parameter must by pass function which will transmit serial data
+ *  This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataCallback"
+ *  As a parameter must be pass function which will transmit serial data
  *
  * */
 void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionCb(uint8_t *DltLogData, uint8_t Size))
@@ -305,7 +308,7 @@ void DLTuc_MessageTransmitDone(void)
 /*
  * @brief DLTuc_LogOutVarArgs(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
  *
- * Typical most usefull function to create DLT Log
+ * function to create DLT Log
  *
  * */
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...)
@@ -320,24 +323,19 @@ uint16_t Size;
 	PrepareHoleHeader(Level,AppId,ContextId,Size);
 	Size = Size +DLT_ACT_HOLE_HEADER_SIZE;
 
+	/*Additional zero on the end of message -therefore it works with more stability */
 	Size++;
 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
 	Size++;
 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
 
-	if(DLT_RB_Write(&DltRingBuffer,DltDebugTmpBuf, Size) == RB_OK)
+	if(DLT_RB_Write(&DltRingBuffer,DltDebugTmpBuf, Size) != RB_OK)
 	{
-		/*Nothing to do*/
-	}
-	else
-	{
-		/*Static flag for Transmit done call back*/
 		LogDroppedFlag = true;
 	}
 
 	uint8_t TmpMessageSize=0;
 	uint8_t *TmpMessagePointer = NULL;
-
 
 	if(TransmitReadyStateFlag == true)
 	{
