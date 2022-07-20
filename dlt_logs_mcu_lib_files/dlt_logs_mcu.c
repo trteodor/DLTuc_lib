@@ -14,7 +14,6 @@
 #include <string.h>
 
 
-
 /*Dlt Logs Ring buffer typedefs start
  *
  * */
@@ -80,7 +79,8 @@ static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t 
  * Static function declaration section
  ********************************************************************************************
  ********************************************************************************************
- ********************************************************************************************
+ *********************************************************************************************/
+
 /*
  * @@brief DLT_RB_Write
  * RingBuffer_t *Buf - pointer to Ring Buffer structure
@@ -247,9 +247,9 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
  *  As a parameter must be pass function which will transmit serial data
  *
  * */
-void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionCb(uint8_t *DltLogData, uint8_t Size))
+void DLTuc_RegisterTransmitSerialDataCallback(void UART2_LowLevelDataTransmit(uint8_t *DltLogData, uint8_t Size))
 {
-	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionCb;
+	ExtSerialTrDataFunctionCb = UART2_LowLevelDataTransmit;
 
 	/*Preapre LOG DROPPED Info Log*/
 	PrepareHoleHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );

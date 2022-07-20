@@ -14,17 +14,17 @@ void SysTickCallBack(uint32_t TickCount)
 	DLTuc_UpdateTimeStampMs(TickCount); /*Inform ucDLTlib about TimeStamp*/
 }
 
-void SerialUartTransmitDMATransmitEndCallBack()
+void UART2_TransmitDMAEndCallBack()
 {
 	DLTuc_MessageTransmitDone(); /*Inform ucDLTlib about message transmission end*/
 		/*This way to make this example simple to read...*/
 }
 
-void LLSerialTrDataFunctionCb(uint8_t *DltLogData, uint8_t Size)
+void UART2_LowLevelDataTransmit(uint8_t *DltLogData, uint8_t Size)
 {
 	/*This function is called by ucDLTlib when is something to send*/
-		/*This CallBack was registered in "main function using*/
-	TUART_DMA_Trasmit(Uart2HandlerPointer,DltLogData,Size); 
+		/*This CallBack was registered in "main function using function: DLTuc_RegisterTransmitSerialDataCallback*/
+	TUART_DMA_Trasmit(Uart2HandlerPointer,DltLogData,Size); /*Call of this function may block contex!!! */
 		/*This way to make this example simple to read...*/
 }
 /*CallBacks used by ucDltLibrary section end..*/
@@ -41,16 +41,16 @@ int Main(void)
 	/*Microcontoler Initialization end...*/
 
 	RegisterSysTickCallBack(SysTickCallBack); 	/*Register SysTick Callback*/
-	Uart2HandlerPointer = UART2_Init115200(SerialUartTransmitDMATransmitEndCallBack);
+	Uart2HandlerPointer = UART2_Init115200(UART2_TransmitDMAEndCallBack);
 		/*Init UART with baud 115200 and pass pointer called after transmission end (transmit complet DMA)*/
 
 
 	/*Register Low Level Transmit function for ucDltLibrary*/
-	DLTuc_RegisterTransmitSerialDataCallback(LLSerialTrDataFunctionCb);
-
-	DEBUGL(DL_INFO, "DLT TESTS START!!!");
+	DLTuc_RegisterTransmitSerialDataCallback(UART2_LowLevelDataTransmit);
 
 	/*Now ucDLTlib is ready to work!*/
+	DEBUGL(DL_INFO, "DLT TESTS START!!!");
+
 	for(int i=0; i<50; i++)
 	{
 		DEBUGL(DL_DEBUG, "Hello DLT with period 5ms");

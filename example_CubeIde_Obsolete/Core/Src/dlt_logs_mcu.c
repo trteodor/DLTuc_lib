@@ -243,9 +243,9 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
  *  As a parameter must by pass function which will transmit serial data
  *
  * */
-void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionCb(uint8_t *DltLogData, uint8_t Size))
+void DLTuc_RegisterTransmitSerialDataCallback(void UART2_LowLevelDataTransmit(uint8_t *DltLogData, uint8_t Size))
 {
-	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionCb;
+	ExtSerialTrDataFunctionCb = UART2_LowLevelDataTransmit;
 
 	/*Preapre LOG DROPPED Info Log*/
 	PrepareHoleHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );

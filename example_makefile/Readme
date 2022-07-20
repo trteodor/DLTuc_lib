@@ -1,5 +1,5 @@
 ###########################################################################
-#To use this build system you have to add in your environment: (path)
+#To use this buil system in fully you have to add in your environment: (path)
 # arm-none-eabi-gcc  
 # OpenOCD
 # ruby
@@ -10,6 +10,6 @@
 ###########################################################################
 
 
-This example using my very old implementation of UART with DMA, but it is working solution
+This example for Dlt_ucDLTlib use my very old implementation of UART with DMA, but it is working solution
 
 In File: application/DltLogLibTests/Src/main.c is the main example file, you should start analyse this code from this position
