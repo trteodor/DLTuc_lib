@@ -5,6 +5,10 @@
  *      Author: teodor
  */
 
+/*****************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************/
+
 #ifndef INC_DLT_LOGS_MCU_H_
 #define INC_DLT_LOGS_MCU_H_
 
@@ -14,9 +18,6 @@
 
 #include <stdarg.h>
 #include <string.h>
-
-
-
 
 /*Debug dlt log level macros start
  *
@@ -143,7 +144,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /*
  ****************************************************************************************************
- * FEW USEFULL MACROS WHICH CAN BE USE FULL TO CRATE DEBUG LOGS
+ * FEW USEFULL MACROS WHICH CAN BE, USEFULL TO CRATE DEBUG LOGS
  * SECTION START
  *****************************************************************************************************
  *****************************************************************************************************
@@ -218,7 +219,8 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /*
  ****************************************************************************************************
- * FEW USEFULL MACROS WHICH SHOULD USE FULL TO CRATE DEBUG LOGS END
+ * FEW USEFULL MACROS WHICH CAN BE, USEFULL TO CRATE DEBUG LOGS
+ * SECTION END
  *****************************************************************************************************
  *****************************************************************************************************
  *

@@ -1,9 +1,6 @@
 # MCU_DLT_LOGS_TRIVIAL_LIB
 A trivial library to send DLT (debug) logs from MCU like STM32 or any other MCU, via serial communication interface like USART/UART. 
 
-**_Demo video:_**
-
-https://www.youtube.com/watch?v=oruxyXiptlI
 
 To view these logs i used the DLT-Viewer:
  * https://github.com/COVESA/dlt-viewer
@@ -23,7 +20,7 @@ if you want change something please feel free to create change pull request.
 
 **_Detailed instruction is in file: dlt_logs_mcu_lib_files/dlt_logs_mcu.h_**
 
-Provided examples was tested on NUCLEO STM32F103RB board and DLT_Viewer Release Tag  2.18 :
+Provided examples was tested on NUCLEO STM32F103RB board and DLT_Viewer :
 
 
 ![NucleoScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/NucleoBoard.jpg)

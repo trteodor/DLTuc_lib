@@ -4,6 +4,11 @@
  *  Created on: 1 lip 2022
  *      Author: teodor
  */
+
+/*****************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************/
+
 #include "dlt_logs_mcu.h"
 
 #include "stdio.h"
@@ -14,7 +19,7 @@
 #include <string.h>
 
 
-/*Dlt Logs Ring buffer typedefs start
+/*ucDLT Logs Ring buffer typedefs
  *
  * */
 
@@ -30,9 +35,7 @@ typedef struct
 	uint16_t Tail; // Pointer to read
 	uint8_t Buffer[DLT_RING_BUFFER_SIZE]; // Array to store data
 } DltRingBuffer_t;
-/*Dlt Logs Ring buffer typedefs end
- *
- * */
+
 
 
 /*

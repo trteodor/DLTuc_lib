@@ -75,8 +75,8 @@ int Main(void)
 		/*Send example Logs in loop...*/
 		DEBUGL(DL_ERROR, "Hello DLT Again Arg1 %d Arg2 :%d" , 2565, 56);
 		DEBUGFF(DL_FATAL, "GENERALLY DLT Again1");
-		DEBUGF(DL_DEBUG, "AnotherTest DLT Again",0);
-		DEBUGL(DL_VERBOSE, "AnotherTest2 DLT Again",0);
+		DEBUGF(DL_DEBUG, "AnotherTest DLT Again");
+		DEBUGL(DL_VERBOSE, "AnotherTest2 DLT Again");
 		DelayMs(1000);
 		DEBUGL(DL_WARN, "Orange is sweet fruit");
 		DelayMs(1000);
