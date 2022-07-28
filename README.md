@@ -1,15 +1,14 @@
 # MCU_DLT_LOGS_TRIVIAL_LIB
-A trivial library to send DLT (debug) logs from MCU like STM32 or any other MCU, via serial communication interface like USART/UART. 
-
+A trivial library to send DLT (debug) logs from MCU like STM32 or any other MCU, via serial communication interface like USART/UART. Data for each message is stored in a ring buffer, thanks to this approach, a queue of sent messages is created
 
 To view these logs i used the DLT-Viewer:
  * https://github.com/COVESA/dlt-viewer
 
-![DltViewerScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/Dlt_Viewer_ScreenShot.jpg)
+![DltViewerScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/pictures/Dlt_Viewer_ScreenShot.jpg)
 
 ECU Config:
 
-![DltEcuConfig](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/Ecu_Config.jpg)
+![DltEcuConfig](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/pictures/Ecu_Config.jpg)
 
 This program is very useful to filtering, marking and we can do much more things with received data. Anyway i planning to use this library in my future hobbyst projects to show debug logs :) 
 
@@ -23,7 +22,7 @@ if you want change something please feel free to create change pull request.
 Provided examples was tested on NUCLEO STM32F103RB board and DLT_Viewer :
 
 
-![NucleoScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/NucleoBoard.jpg)
+![NucleoScreen](https://github.com/trteodor/MCU_DLT_LOGS_TRIVIAL_LIB/blob/master/pictures/NucleoBoard.jpg)
 
 **_Actually only example called "example_makefile" is maintance because this approach is very convience for me and should be platform independent_**
 
