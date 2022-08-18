@@ -42,6 +42,27 @@ typedef enum
 }DltLogLevel_t;
 
 
+// typedef
+// {
+// 	uint32_t HeaderStart;
+// 	BaseHeaderConfig_t BaseHeaderConfig;
+// 	uint8_t MessageCounter;
+// 	uint16_t MessageLength;
+// 	uint32_t EcuId;
+// 	uint32_t TimeStamp;
+// }DLT_BaseHeader_t;
+
+// typedef
+// {
+// 	DLT_DebugLevel_t DebugLevel;
+// 	uint8_t NumberOfArguments;
+// 	uint32_t AppId;
+// 	uint32_t ContexID;
+// 	TypeInfo_t TypeInfo;
+// 	uint16_t Argument1;
+// }DLT_ExtendedHeader_t;
+
+
 /*
  ****************************************************************************************************
  * M_DLT Configuration defines start

@@ -1,5 +1,5 @@
 # MCU_DLT_LOGS_TRIVIAL_LIB
-A trivial library to send DLT (debug) logs from MCU like STM32 or any other MCU, via serial communication interface like USART/UART. Data for each message is stored in a ring buffer, thanks to this approach, a queue of sent messages is created
+A trivial library to send DLT (debug) logs from MCU like STM32 or any other MCU, through serial communication interface like USART/UART. Data for each message is stored in a ring buffer, thanks to this approach, a queue of sent messages is created
 
 To view these logs i used the DLT-Viewer:
  * https://github.com/COVESA/dlt-viewer
