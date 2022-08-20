@@ -12,6 +12,7 @@
         "main.h": "c",
         "config.h": "c",
         "contable.h": "c",
-        "stm32f1xx.h": "c"
+        "stm32f1xx.h": "c",
+        "dltuc.h": "c"
     }
 }

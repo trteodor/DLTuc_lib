@@ -16,8 +16,8 @@ INC_DIR += -IDrivers/CMSIS/Device/ST/STM32F1xx/Include
 INC_DIR += -IDrivers/CMSIS/Include
 
 #Add DltLibFiles
-INC_DIR += -I../ucDLTlibFiles
-SRC +=  ./../ucDLTlibFiles/ucDLTlib.c
+INC_DIR += -I../DLTuc_libFiles
+SRC +=  ./../DLTuc_libFiles/DLTuc.c
 
 # link script
 LDSCRIPT = common/STM32F103RBTx_FLASH.ld
