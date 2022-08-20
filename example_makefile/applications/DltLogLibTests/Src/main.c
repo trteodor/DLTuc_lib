@@ -23,7 +23,7 @@ void UART2_TransmitDMAEndCallBack()
 void UART2_LowLevelDataTransmit(uint8_t *DltLogData, uint8_t Size)
 {
 	/*This function is called by ucDLTlib when is something to send*/
-		/*This CallBack was registered in "main function using function: DLTuc_RegisterTransmitSerialDataCallback*/
+		/*This CallBack was registered in main function using function: DLTuc_RegisterTransmitSerialDataCallback*/
 	TUART_DMA_Trasmit(Uart2HandlerPointer,DltLogData,Size); /*Call of this function may block contex!!! */
 		/*This way to make this example simple to read...*/
 }
