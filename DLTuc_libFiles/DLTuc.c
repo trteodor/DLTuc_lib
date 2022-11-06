@@ -323,14 +323,14 @@ uint16_t Size;
 	Size = vsprintf((char *)DltDebugTmpBuf + DLT_ACT_HOLE_HEADER_SIZE, (char *)Payload,ap);
 	va_end(ap);
 
-	PrepareHoleHeader(Level,AppId,ContextId,Size);
-	Size = Size +DLT_ACT_HOLE_HEADER_SIZE;
-
 	/*Additional zero on the end of message -therefore it works with more stability */
 	Size++;
 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
 	Size++;
 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
+
+	PrepareHoleHeader(Level,AppId,ContextId,Size);
+	Size = Size +DLT_ACT_HOLE_HEADER_SIZE;
 
 	if(DLT_RB_Write(&DltRingBuffer,DltDebugTmpBuf, Size) != RB_OK)
 	{
