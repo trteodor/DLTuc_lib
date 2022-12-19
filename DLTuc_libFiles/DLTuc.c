@@ -234,17 +234,10 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
 /*
  ****************************************************************************************************
  * API Function declarations section START
+ * Api function description is in header file
  *****************************************************************************************************
  */
 
-/*!
- ************************************************************************************************
- * \brief DLTuc_RegisterTransmitSerialDataCallback
- * \details This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataCallback"
- *          As a parameter must be pass function which will transmit serial data
- * \param in LLSerialTrDataFunctionC transmit function pointer
- 
- ************************************************************************************************/
 void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size))
 {
 	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionC;
@@ -266,15 +259,7 @@ void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8
 
 	DLtLogDroppedSize = DLT_ACT_HOLE_HEADER_SIZE + sizeof(DltLogDroppedInfo);
 }
-
-/*!
- ************************************************************************************************
- * \brief DLTuc_MessageTransmitDone
- * \details IMPORTANT!!!!!
- *  Call this function when the transsmision is end
- *  For example in "DMA transmission end callback" to inform the lib that the message is transmitted
- ************************************************************************************************
- * */
+/******************************************************************************************/
 void DLTuc_MessageTransmitDone(void)
 {
 	uint8_t TmpMessageSize=0;
@@ -304,16 +289,7 @@ void DLTuc_MessageTransmitDone(void)
 	}
 }
 
-/*!
- ************************************************************************************************
- * \brief DLTuc_LogOutVarArgs
- * \details function to create DLT Log
- * \param DltLogLevel_t Level - of Dlt log
- * \param in AppId - size of the "DltLogData" (return value)
- * \param in ContextId - pointer to the message stored in RingBuffer (return value)
- * \param in Payload String to send as dlt log
- * \param in ... parameters same as in printf function
- *************************************************************************************************/
+/******************************************************************************************/
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...)
 {
 va_list ap;
@@ -357,12 +333,7 @@ uint16_t Size;
 	}
 }
 
-/*!
- ************************************************************************************************
- * \brief DLTuc_UpdateTimeStampMs
- * \details function to update time stamp in library
- * \param Time - system time in ms
- *************************************************************************************************/
+/******************************************************************************************/
 void DLTuc_UpdateTimeStampMs(uint32_t Time)
 {
 	TimestampValue = (Time*10);
