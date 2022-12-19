@@ -1,13 +1,10 @@
-/*
+/****************************************************************************
  * dlt_logs_mcu.c
  *
  *  Created on: 1 lip 2022
  *      Author: teodor
- */
-
-/*****************************************************************************************************
-******************************************************************************************************
-******************************************************************************************************/
+ * This file is a part of DLTuc library
+ ****************************************************************************/
 
 #include "DLTuc.h"
 
@@ -19,16 +16,20 @@
 #include <string.h>
 
 
-/*ucDLT Logs Ring buffer typedefs
- *
+/**!
+ * \brief RB_Status 
+ * \details ---
  * */
-
 typedef enum
 {
 	RB_OK       = 0,
 	RB_ERROR	= 1
 } RB_Status;
 
+/**!
+ * \brief DltRingBuffer_t 
+ * \details ---
+ * */
 typedef struct
 {
 	uint16_t Head; // Pointer to write
@@ -38,14 +39,10 @@ typedef struct
 
 
 
-/*
- *
+/**
  * *******************************************************************************************
- *
  * Static variables declaration and function prototypes
  * *******************************************************************************************
- *  * *******************************************************************************************
- *  * *******************************************************************************************
  * */
 
 
@@ -76,19 +73,18 @@ static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t
 static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize);
 
 /*
- *
- ********************************************************************************************
- *
+ *********************************************************************************************
  * Static function declaration section
  ********************************************************************************************
- ********************************************************************************************
- *********************************************************************************************/
+ */
 
-/*
- * @@brief DLT_RB_Write
- * RingBuffer_t *Buf - pointer to Ring Buffer structure
- * MessageSize - size of the "DltLogData" (return value)
- * MessagePointer - pointer to the message stored in RingBuffer (return value)
+/*!
+ ************************************************************************************************
+ * \brief DLT_RB_Read Function to read data from ring buffer
+ * \details --
+ * \param RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * \param out MessageSize - size of the "DltLogData" (return value)
+ * \param out MessagePointer - pointer to the message stored in RingBuffer (return value)
  * 
  * */
 static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer)
@@ -111,13 +107,14 @@ static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t
 	return RB_OK;
 }
 
-/*
- * @@brief DLT_RB_Write
- * RingBuffer_t *Buf - pointer to Ring Buffer structure
- * *DltLogData - pointer to the data stored in RingBuffer
- * MessageSize - size of the "DltLogData" 
- * 
- * */
+/*!
+ ************************************************************************************************
+ * \brief DLT_RB_Write
+ * \details --
+ * \param in RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * \param in DltLogData - pointer to the data stored in RingBuffer
+ * \param in MessageSize - size of the "DltLogData" 
+ ************************************************************************************************/
 static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize)
 {
 	// Calculate new Head pointer value
@@ -146,14 +143,13 @@ static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t 
 	return RB_OK;
 }
 
-
-/*
- * @@brief PrepareHoleHeader
- * A very stupid implementation of DLT Header - but it works fine
+/*!
+ ************************************************************************************************
+ * \brief PrepareHoleHeader
+ * \details A very stupid implementation of DLT Header - but it works fine
  * It is possible create dedicated bitfiels a structure but it require time...
  * refer to: https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_PRS_DiagnosticLogAndTraceProtocol.pdf
- *
- * */
+ ************************************************************************************************/
 static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size)
 {
 	if(size > (254 -32) )
@@ -239,20 +235,19 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
  ****************************************************************************************************
  * API Function declarations section START
  *****************************************************************************************************
- *****************************************************************************************************
- *
- * */
+ */
 
-/*
- *@brief DLTuc_RegisterTransmitSerialDataCallback
- * IMPORTANT!!!!!
- *  This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataCallback"
- *  As a parameter must be pass function which will transmit serial data
- *
- * */
-void DLTuc_RegisterTransmitSerialDataCallback(void UART2_LowLevelDataTransmit(uint8_t *DltLogData, uint8_t Size))
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_RegisterTransmitSerialDataCallback
+ * \details This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataCallback"
+ *          As a parameter must be pass function which will transmit serial data
+ * \param in LLSerialTrDataFunctionC transmit function pointer
+ 
+ ************************************************************************************************/
+void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size))
 {
-	ExtSerialTrDataFunctionCb = UART2_LowLevelDataTransmit;
+	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionC;
 
 	/*Preapre LOG DROPPED Info Log*/
 	PrepareHoleHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );
@@ -272,12 +267,13 @@ void DLTuc_RegisterTransmitSerialDataCallback(void UART2_LowLevelDataTransmit(ui
 	DLtLogDroppedSize = DLT_ACT_HOLE_HEADER_SIZE + sizeof(DltLogDroppedInfo);
 }
 
-/*
- *@brief DLTuc_MessageTransmitDone
- * IMPORTANT!!!!!
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_MessageTransmitDone
+ * \details IMPORTANT!!!!!
  *  Call this function when the transsmision is end
- * For example in "DMA transmission end callback" to inform the lib that the message is transmitted
- *
+ *  For example in "DMA transmission end callback" to inform the lib that the message is transmitted
+ ************************************************************************************************
  * */
 void DLTuc_MessageTransmitDone(void)
 {
@@ -308,12 +304,16 @@ void DLTuc_MessageTransmitDone(void)
 	}
 }
 
-/*
- * @brief DLTuc_LogOutVarArgs(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
- *
- * function to create DLT Log
- *
- * */
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_LogOutVarArgs
+ * \details function to create DLT Log
+ * \param DltLogLevel_t Level - of Dlt log
+ * \param in AppId - size of the "DltLogData" (return value)
+ * \param in ContextId - pointer to the message stored in RingBuffer (return value)
+ * \param in Payload String to send as dlt log
+ * \param in ... parameters same as in printf function
+ *************************************************************************************************/
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...)
 {
 va_list ap;
@@ -357,12 +357,12 @@ uint16_t Size;
 	}
 }
 
-
-/*
- *@brief DLTuc_UpdateTimeStampMs
- *
- *
- * */
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_UpdateTimeStampMs
+ * \details function to update time stamp in library
+ * \param Time - system time in ms
+ *************************************************************************************************/
 void DLTuc_UpdateTimeStampMs(uint32_t Time)
 {
 	TimestampValue = (Time*10);

@@ -1,8 +1,18 @@
-/*
+/****************************************************************************
  * dlt_logs_mcu.h
  *
  *  Created on: 1 lip 2022
  *      Author: teodor
+ * This file is a part of DLTuc library
+ ****************************************************************************/
+
+/**
+ * @file dlt_logs_mcu.h
+ * @author teodor
+ * @date 1 Jul 2022
+ * @brief File is a part of DLTuc library
+ *
+ * In this header you can find types, configuration and Api function provided by DLTuc library
  */
 
 #ifndef INC_DLT_LOGS_MCU_H_
@@ -10,16 +20,13 @@
 
 
 #include "stdint.h"
-
-
 #include <stdarg.h>
 #include <string.h>
 
-
-
-
-/*Debug dlt log level macros start
- *
+/**
+ * *******************************************************************************************
+ * Debug dlt log level macros start
+ * *******************************************************************************************
  * */
 #define DL_FATALd   0x01
 #define DL_ERRORd  0x02
@@ -27,8 +34,10 @@
 #define DL_INFOd    0x04
 #define DL_DEBUGd   0x05
 #define DL_VERBOSEd 0x06
-/*Debug dlt log level macros end
- *
+/**
+ * *******************************************************************************************
+ * Debug dlt typedef start
+ * *******************************************************************************************
  * */
 
 typedef enum
@@ -63,13 +72,10 @@ typedef enum
 // }DLT_ExtendedHeader_t;
 
 
-/*
- ****************************************************************************************************
- * M_DLT Configuration defines start
- * SECTION START
- *****************************************************************************************************
- *****************************************************************************************************
- *
+/**
+ * *******************************************************************************************
+ * Configuration defines 
+ * *******************************************************************************************
  * */
 #define DLT_LOG_ECUID           "STF1" /*Electronic Controller Unit ID*/
 
@@ -98,62 +104,65 @@ typedef enum
 #define DLT_MAX_SINGLE_MESSAGE_SIZE 255
 #define DLT_RING_BUFFER_SIZE 15
 
-
-/*
- ****************************************************************************************************
- * API Function prototypes section START
- *****************************************************************************************************
- *****************************************************************************************************
- *
+/**
+ * *******************************************************************************************
+ * API Function prototypes section 
+ * *******************************************************************************************
  * */
-/*DLTuc - Data Log Trace microcontroler "u" micro*/
 
-/*
- *@brief DLTuc_RegisterTransmitSerialDataCallback
- * IMPORTANT!!!!!
- *  This simple stack/library must have initialized by "DLTuc_RegisterTransmitSerialDataCallback"
- *  As a parameter must by pass function which will transmit serial data
- *
- * */
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_RegisterTransmitSerialDataCallback
+ * \details This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataCallback"
+ *          As a parameter must be pass function which will transmit serial data
+ * \param in LLSerialTrDataFunctionC transmit function pointer
+ 
+ ************************************************************************************************/
 void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size));
 
- /*
-  *@brief DLTuc_MessageTransmitDone
-  * IMPORTANT!!!!!
-  *  Call this function when the transsmision is end
-  * For example in "DMA transmission end callback" to inform the lib that the message is transmitted
-  *
-  * */
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_MessageTransmitDone
+ * \details IMPORTANT!!!!!
+ *  Call this function when the transsmision is end
+ *  For example in "DMA transmission end callback" to inform the lib that the message is transmitted
+ ************************************************************************************************
+ * */
 void DLTuc_MessageTransmitDone(void);
 
 
-/*
- *@brief DLTuc_UpdateTimeStampMs
- *
- *
- * */
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_UpdateTimeStampMs
+ * \details function to update time stamp in library
+ * \param Time - system time in ms
+ *************************************************************************************************/
 void DLTuc_UpdateTimeStampMs(uint32_t Time);
 
 
-/*
- * @brief DLTuc_LogOutVarArgs(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
- *
- * Function to create DLT Log (Session id isn't supported)
- *
- * */
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_LogOutVarArgs
+ * \details function to create DLT Log
+ * \param DltLogLevel_t Level - of Dlt log
+ * \param in AppId - size of the "DltLogData" (return value)
+ * \param in ContextId - pointer to the message stored in RingBuffer (return value)
+ * \param in Payload String to send as dlt log
+ * \param in ... parameters same as in printf function
+ *************************************************************************************************/
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
 
-/*
- ****************************************************************************************************
- * FEW USEFULL MACROS WHICH TO CRATE DEBUG LOGS
- * SECTION START
- *****************************************************************************************************
- *****************************************************************************************************
- *
+
+
+/**
+ * *******************************************************************************************
+ * Frew usefull macros to easer create DLT log
+ * *******************************************************************************************
  * */
-/*
-* @brief DLT_LOG_ENABLE_LEVEL
-* to define the minimum level log which will printed using the debug macros
+
+/**!
+* \brief DLT_LOG_ENABLE_LEVEL
+* \details to define the minimum level log which will printed using the debug macros
 *
 */
 
@@ -162,14 +171,22 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /*This values - it's only example*/
 #define DLT_LOG_CONTEX      "TEST"
+/**!
+* \brief DLT_LOG_ENABLE_LEVEL
+* \details to define the minimum level log which will printed using the debug macros
+*
+*/
 #define DLT_LOG_APPID      "1234"
+/**!
+* \brief DLT_LOG_ENABLE_LEVEL
+* \details to define the minimum level log which will printed using the debug macros
+*
+*/
 
 #define DLT_LOG_APPID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_APPID[0])) << 24UL) | \
 						 (((uint32_t) ((uint8_t)DLT_LOG_APPID[1])) << 16UL) | \
 					  (((uint32_t) ((uint8_t)DLT_LOG_APPID[2])) << 8UL) | \
 				  ((uint32_t)((uint8_t)DLT_LOG_APPID[3]))))
-
-
 
 
 #define DLT_LOG_CONTEX_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_CONTEX[0])) << 24UL) | \
@@ -181,10 +198,9 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 
 
-/*
- * @brief DEBUGL(level, str, ...)
- *
- * Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
+/**!
+ * \brief DEBUGL(level, str, ...)
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  *
  * */
 #define DEBUGL(log_level, str, ...)\
@@ -192,10 +208,9 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) str, ##__VA_ARGS__);\
 	}
 
-/*
+/**!
  * @brief DEBUGF(log_level, str, ...)
- *
- * Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  * Additionally add the name of the calling function
  *
  *
@@ -205,10 +220,9 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s() LOG: "str, __FUNCTION__,##__VA_ARGS__);\
 	}
 
-/*
- * @brief DEBUGFF(log_level, str, ...)
- *
- * Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
+/**!
+ * \brief DEBUGFF(log_level, str, ...)
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  * Additionally add the name of the calling function and file name
  *
  *
@@ -217,14 +231,5 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
 		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FILE:%s() FUN:%s() LOG: "str,__FILE__,__FUNCTION__,##__VA_ARGS__);\
 	}
-
-/*
- ****************************************************************************************************
- * FEW USEFULL MACROS WHICH SHOULD USE FULL TO CRATE DEBUG LOGS END
- *****************************************************************************************************
- *****************************************************************************************************
- *
- * */
-
 
 #endif /* INC_DLT_LOGS_MCU_H_ */
