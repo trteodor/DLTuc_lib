@@ -22,5 +22,5 @@ simple:
 
 #Compile and flash simple example
 performance_test:
-	cd examples/simple && make
+	cd examples/performanceTestRtos && make
 
