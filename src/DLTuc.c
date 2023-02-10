@@ -1,11 +1,12 @@
-/****************************************************************************
- * dlt_logs_mcu.c
+/**
+ * @file DLTuc.c
+ * @author teodor
+ * @date 1 Jul 2022
+ * @brief This file is a part of DLTuc library
  *
- *  Created on: 1 lip 2022
- *      Author: teodor
- * This file is a part of DLTuc library
- ****************************************************************************/
-
+ * In this source file you can find hole DLTuc library implementation..
+ *
+ */
 #include "DLTuc.h"
 
 #include "stdio.h"
@@ -14,6 +15,59 @@
 #include "stdbool.h"
 #include <stdarg.h>
 #include <string.h>
+
+
+
+/*@brief 
+ *
+ *  - convert the To strings to uint32_t
+ */
+#define DLT_LOG_ECUID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_ECUID[0])) << 24UL) | \
+						 (((uint32_t) ((uint8_t)DLT_LOG_ECUID[1])) << 16UL) | \
+					  (((uint32_t) ((uint8_t)DLT_LOG_ECUID[2])) << 8UL) | \
+				  ((uint32_t)((uint8_t)DLT_LOG_ECUID[3]))))
+
+
+#define DLT_LOG_APPID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_APPID[0])) << 24UL) | \
+						 (((uint32_t) ((uint8_t)DLT_LOG_APPID[1])) << 16UL) | \
+					  (((uint32_t) ((uint8_t)DLT_LOG_APPID[2])) << 8UL) | \
+				  ((uint32_t)((uint8_t)DLT_LOG_APPID[3]))))
+
+
+#define DLT_LOG_CONTEX_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_CONTEX[0])) << 24UL) | \
+						 (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[1])) << 16UL) | \
+					  (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[2])) << 8UL) | \
+				  ((uint32_t)((uint8_t)DLT_LOG_CONTEX[3]))))
+
+
+/*
+* @brief DLT_ACT_HOLE_HEADER_SIZE hole header sum
+* Standard Header + Extended + TypeInfo
+* Don't modify it if you aren't sure what are you doing!!!
+*/
+#define DLT_ACT_HOLE_HEADER_SIZE 32
+
+
+/*typedefs for future use..*/
+// typedef
+// {
+// 	uint32_t HeaderStart;
+// 	BaseHeaderConfig_t BaseHeaderConfig;
+// 	uint8_t MessageCounter;
+// 	uint16_t MessageLength;
+// 	uint32_t EcuId;
+// 	uint32_t TimeStamp;
+// }DLT_BaseHeader_t;
+
+// typedef
+// {
+// 	DLT_DebugLevel_t DebugLevel;
+// 	uint8_t NumberOfArguments;
+// 	uint32_t AppId;
+// 	uint32_t ContexID;
+// 	TypeInfo_t TypeInfo;
+// 	uint16_t Argument1;
+// }DLT_ExtendedHeader_t;
 
 
 /**!
@@ -44,8 +98,6 @@ typedef struct
  * Static variables declaration and function prototypes
  * *******************************************************************************************
  * */
-
-
 static void (*ExtSerialTrDataFunctionCb)(uint8_t *DltLogData, uint8_t Size);
 static uint32_t (*GetSystemTimeMs)(void);
 
@@ -70,6 +122,10 @@ static volatile uint8_t TransmitReadyStateFlag = true; /*TmpFromDma for example*
 static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size);
 static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
 static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize);
+
+
+
+
 
 /*
  *********************************************************************************************
@@ -243,10 +299,13 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
 }
 
 
+
+
+
 /*
  ****************************************************************************************************
- * API Function declarations section START
- * Api function description is in header file
+ * exported functions declarations section START
+ * exported functions description is added in header file
  *****************************************************************************************************
  */
 

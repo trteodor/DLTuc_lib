@@ -1,18 +1,11 @@
-/****************************************************************************
- * dlt_logs_mcu.h
- *
- *  Created on: 1 lip 2022
- *      Author: teodor
- * This file is a part of DLTuc library
- ****************************************************************************/
-
 /**
  * @file DLTuc.h
  * @author teodor
  * @date 1 Jul 2022
- * @brief File is a part of DLTuc library
+ * @brief This file is a part of DLTuc library
  *
- * In this header you can find types, configuration and Api function provided by DLTuc library
+ * In this header you can find types, Api function provided by DLTuc library, 
+ * and usefull macros for convience use DLTuc library in logging purposes
  */
 
 #ifndef INC_DLT_LOGS_MCU_H_
@@ -25,26 +18,14 @@
 
 #include "DLTucConfig.h"
 
-/**
- * *******************************************************************************************
- * Debug dlt log level macros start
- * *******************************************************************************************
- * */
-#define DL_FATALd   0x01
-#define DL_ERRORd   0x02
-#define DL_WARNd    0x03
-#define DL_INFOd    0x04
-#define DL_DEBUGd   0x05
-#define DL_VERBOSEd 0x06
-/**
- * *******************************************************************************************
- * Debug dlt typedef start
- * *******************************************************************************************
- * */
 
+/**!
+ * \brief DltLogLevel_t 
+ * \details Typdef used to identify the DLT log level
+ * */
 typedef enum
 {
-	DL_FATAL   = 1,
+	DL_FATAL   =1,
 	DL_ERROR   =2,
 	DL_WARN    =3,
 	DL_INFO    =4,
@@ -53,64 +34,6 @@ typedef enum
 }DltLogLevel_t;
 
 
-// typedef
-// {
-// 	uint32_t HeaderStart;
-// 	BaseHeaderConfig_t BaseHeaderConfig;
-// 	uint8_t MessageCounter;
-// 	uint16_t MessageLength;
-// 	uint32_t EcuId;
-// 	uint32_t TimeStamp;
-// }DLT_BaseHeader_t;
-
-// typedef
-// {
-// 	DLT_DebugLevel_t DebugLevel;
-// 	uint8_t NumberOfArguments;
-// 	uint32_t AppId;
-// 	uint32_t ContexID;
-// 	TypeInfo_t TypeInfo;
-// 	uint16_t Argument1;
-// }DLT_ExtendedHeader_t;
-
-
-/*
-* @brief DLT_ACT_HOLE_HEADER_SIZE hole header sum
-* Standard Header + Extended + TypeInfo
-* Don't modify it if you aren't sure what are you doing!!!
-*/
-#define DLT_ACT_HOLE_HEADER_SIZE 32
-
-
-
-/*@brief 
- *
- *  - convert the To strings to uint32_t
- */
-#define DLT_LOG_ECUID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_ECUID[0])) << 24UL) | \
-						 (((uint32_t) ((uint8_t)DLT_LOG_ECUID[1])) << 16UL) | \
-					  (((uint32_t) ((uint8_t)DLT_LOG_ECUID[2])) << 8UL) | \
-				  ((uint32_t)((uint8_t)DLT_LOG_ECUID[3]))))
-
-
-#define DLT_LOG_APPID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_APPID[0])) << 24UL) | \
-						 (((uint32_t) ((uint8_t)DLT_LOG_APPID[1])) << 16UL) | \
-					  (((uint32_t) ((uint8_t)DLT_LOG_APPID[2])) << 8UL) | \
-				  ((uint32_t)((uint8_t)DLT_LOG_APPID[3]))))
-
-
-#define DLT_LOG_CONTEX_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_CONTEX[0])) << 24UL) | \
-						 (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[1])) << 16UL) | \
-					  (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[2])) << 8UL) | \
-				  ((uint32_t)((uint8_t)DLT_LOG_CONTEX[3]))))
-
-
-
-/**
- * *******************************************************************************************
- * exported functionss
- * *******************************************************************************************
- * */
 
 /*!
  ************************************************************************************************
@@ -126,6 +49,7 @@ void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8
  ************************************************************************************************
  * \brief DLTuc_RegisterGetTimeStampMsCallback
  * \details function to update time stamp in library
+* \param in GetSysTime - transmit function pointer
  * \param Time - system time in ms
  *************************************************************************************************/
 void DLTuc_RegisterGetTimeStampMsCallback(uint32_t GetSysTime(void));
@@ -144,7 +68,7 @@ void DLTuc_MessageTransmitDone(void);
 /*!
  ************************************************************************************************
  * \brief DLTuc_LogOutVarArgs
- * \details function to create DLT Log
+ * \details default function to create DLT Log
  * \param DltLogLevel_t Level - of Dlt log
  * \param in AppId - size of the "DltLogData" (return value)
  * \param in ContextId - pointer to the message stored in RingBuffer (return value)
@@ -154,6 +78,9 @@ void DLTuc_MessageTransmitDone(void);
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
 
 
+
+
+/*Additional macros for convience use the library.. start*/
 #ifdef LOGS_ENABLE
 
 /**!
