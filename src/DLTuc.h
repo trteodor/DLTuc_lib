@@ -4,8 +4,14 @@
  * @date 1 Jul 2022
  * @brief This file is a part of DLTuc library
  *
- * In this header you can find types, Api function provided by DLTuc library, 
+ * In this header you can find types, Api function provided by DLTuc library,
  * and usefull macros for convience use DLTuc library in logging purposes
+ *
+ * Requirments:
+ * Around ~2kB of RAM
+ * Check Configuration file and defines:
+ * DLT_RING_BUFFER_SIZE, DLT_MAX_SINGLE_MESSAGE_SIZE
+ *
  */
 
 #ifndef INC_DLT_LOGS_MCU_H_
@@ -17,6 +23,27 @@
 #include <string.h>
 
 #include "DLTucConfig.h"
+
+/*@brief 
+ *
+ *  - convert the To strings to uint32_t
+ */
+#define DLT_LOG_ECUID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_ECUID[0])) << 24UL) | \
+						 (((uint32_t) ((uint8_t)DLT_LOG_ECUID[1])) << 16UL) | \
+					  (((uint32_t) ((uint8_t)DLT_LOG_ECUID[2])) << 8UL) | \
+				  ((uint32_t)((uint8_t)DLT_LOG_ECUID[3]))))
+
+
+#define DLT_LOG_APPID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_APPID[0])) << 24UL) | \
+						 (((uint32_t) ((uint8_t)DLT_LOG_APPID[1])) << 16UL) | \
+					  (((uint32_t) ((uint8_t)DLT_LOG_APPID[2])) << 8UL) | \
+				  ((uint32_t)((uint8_t)DLT_LOG_APPID[3]))))
+
+
+#define DLT_LOG_CONTEX_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_CONTEX[0])) << 24UL) | \
+						 (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[1])) << 16UL) | \
+					  (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[2])) << 8UL) | \
+				  ((uint32_t)((uint8_t)DLT_LOG_CONTEX[3]))))
 
 
 /**!
@@ -80,7 +107,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 
 
-/*Additional macros for convience use the library.. start*/
+/*Additional macros for convience use the library..*/
 #ifdef LOGS_ENABLE
 
 /**!
@@ -113,7 +140,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  * */
 #define LOGF(log_level, str, ...)\
 	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s() LOG: "str, __FUNCTION__,##__VA_ARGS__);\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *) "FUN:%s LOG: "str, __FUNCTION__,##__VA_ARGS__);\
 	}
 
 /**!
@@ -125,7 +152,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
  * */
 #define LOGFF(log_level, str, ...)\
 	if(log_level <= DLT_LOG_ENABLE_LEVEL){\
-		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FILE:%s() FUN:%s() LOG: "str,__FILE__,__FUNCTION__,##__VA_ARGS__);\
+		DLTuc_LogOutVarArgs(log_level, DLT_LOG_APPID_VALUE, DLT_LOG_CONTEX_VALUE,(uint8_t *)"FILE:%s LINE: %d FUN:%s LOG: "str,__FILE__,__LINE__,__FUNCTION__,##__VA_ARGS__);\
 	}
 
 #else

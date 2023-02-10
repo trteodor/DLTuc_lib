@@ -6,8 +6,9 @@
 
 #define	QUANTA	1
 
-#define MAX_NUM_OF_THREADS 5
-#define STACKSIZE 500 //Stack Size for Each Task
+#define MAX_NUM_OF_THREADS 4 //+1 for IDLE task.. 
+#define STACKSIZE 500 //Stack Size for Each Task (in Words! X*4bytes)
+/*Now it's 5*500*4 = 10kb RAM!!*/
 #define BUS_FREQ		64000000
 
 

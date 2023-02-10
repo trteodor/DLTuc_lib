@@ -1,20 +1,20 @@
-default: startMessage demo infoMessage
+default: startMessage simple infoMessage
 
 startMessage:
-	@echo Compiling and Flashing demo example..
+	@echo Compiling and Flashing simple example..
 	@echo --------------------------------
 
 infoMessage:
 	@echo --------------------------------
 	@echo --------------------------------
-	@echo possible another examples: demo simple perf_test ...
+	@echo possible another examples: simple \ demo_rtos \ perf_test
 	@echo check directory: examples
-	@echo to compile and flash another than default example just call:
-	@echo make simple
+	@echo to compile and program/flash board using another than default example just call:
+	@echo make demo_rtos
 	@echo or: make performance_test
 
-demo:
-	cd examples/demo && make
+demo_rtos:
+	cd examples/demo_rtos && make
 
 #Compile and flash simple example
 simple:

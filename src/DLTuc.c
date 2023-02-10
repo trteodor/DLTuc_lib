@@ -6,6 +6,11 @@
  *
  * In this source file you can find hole DLTuc library implementation..
  *
+ * Requirments:
+ * Around ~2kB of RAM
+ * Check Configuration file and defines:
+ * DLT_RING_BUFFER_SIZE, DLT_MAX_SINGLE_MESSAGE_SIZE
+ *
  */
 #include "DLTuc.h"
 
@@ -15,30 +20,6 @@
 #include "stdbool.h"
 #include <stdarg.h>
 #include <string.h>
-
-
-
-/*@brief 
- *
- *  - convert the To strings to uint32_t
- */
-#define DLT_LOG_ECUID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_ECUID[0])) << 24UL) | \
-						 (((uint32_t) ((uint8_t)DLT_LOG_ECUID[1])) << 16UL) | \
-					  (((uint32_t) ((uint8_t)DLT_LOG_ECUID[2])) << 8UL) | \
-				  ((uint32_t)((uint8_t)DLT_LOG_ECUID[3]))))
-
-
-#define DLT_LOG_APPID_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_APPID[0])) << 24UL) | \
-						 (((uint32_t) ((uint8_t)DLT_LOG_APPID[1])) << 16UL) | \
-					  (((uint32_t) ((uint8_t)DLT_LOG_APPID[2])) << 8UL) | \
-				  ((uint32_t)((uint8_t)DLT_LOG_APPID[3]))))
-
-
-#define DLT_LOG_CONTEX_VALUE	((uint32_t)((((uint32_t) ((uint8_t)DLT_LOG_CONTEX[0])) << 24UL) | \
-						 (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[1])) << 16UL) | \
-					  (((uint32_t) ((uint8_t)DLT_LOG_CONTEX[2])) << 8UL) | \
-				  ((uint32_t)((uint8_t)DLT_LOG_CONTEX[3]))))
-
 
 /*
 * @brief DLT_ACT_HOLE_HEADER_SIZE hole header sum
@@ -205,7 +186,7 @@ DLTuc_OS_CRITICAL_END();
  ************************************************************************************************
  * \brief PrepareHoleHeader
  * \details A very stupid implementation of DLT Header - but it works fine
- * It is possible create dedicated bitfiels a structure but it require time...
+ * It is possible create dedicated bitfiels, structure but it require time...
  * refer to: https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_PRS_DiagnosticLogAndTraceProtocol.pdf
  ************************************************************************************************/
 static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size)
@@ -407,7 +388,9 @@ DLTuc_OS_CRITICAL_START();
 		if(DLT_RB_Read(&DltRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
 			{
 				TransmitReadyStateFlag = false;
-DLTuc_OS_CRITICAL_END();
+DLTuc_OS_CRITICAL_END(); /*Transmission must be started in this contex now...*/
+							/*It's important to be aware of this fact!!*/
+							/*In this library for sure you may find some bugs..*/
 				if(ExtSerialTrDataFunctionCb != NULL)
 				{
 					ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);

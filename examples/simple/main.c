@@ -53,6 +53,8 @@ int Main(void)
 	/*Now ucDLTlib is ready to work!*/
 	LOGL(DL_INFO, "DLT TESTS START!!!");
 
+	LOG("Compilation date: %s time: %s", __DATE__, __TIME__);
+
 	for(int i=0; i<50; i++)
 	{
 		LOGL(DL_DEBUG, "Hello DLT with period 5ms");
@@ -74,13 +76,14 @@ int Main(void)
 
 	while(1)
 	{
+		LOG("Compilation date: %s time: %s", __DATE__, __TIME__);
 		/*Send example Logs in loop...*/
 		LOGL(DL_ERROR, "Hello DLT Again Arg1 %d Arg2 :%d" , 2565, 56);
 		LOGFF(DL_FATAL, "GENERALLY DLT Again1");
 		LOGF(DL_DEBUG, "AnotherTest DLT Again");
 		LOG("AnotherTest2 DLT Again");
 		DelayMs(1000);
-		LOGL(DL_WARN, "Orange is sweet fruit");
+		LOGL(DL_WARN, "Orange it's a sweet fruit");
 		DelayMs(1000);
 		tooglePIN(GPIOA, Psm5);
 	}
