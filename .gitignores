@@ -1,0 +1,4 @@
+examples/simple/build
+examples/demo/build
+examples/demo2/build
+examples/performanceTestRtos/build

@@ -1,0 +1,1798 @@
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"DLTuc.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.DLT_RB_Read,"ax",%progbits
+  18              		.align	1
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  23              	DLT_RB_Read:
+  24              	.LVL0:
+  25              	.LFB68:
+  26              		.file 1 "../../src/DLTuc.c"
+   1:../../src/DLTuc.c **** /****************************************************************************
+   2:../../src/DLTuc.c ****  * dlt_logs_mcu.c
+   3:../../src/DLTuc.c ****  *
+   4:../../src/DLTuc.c ****  *  Created on: 1 lip 2022
+   5:../../src/DLTuc.c ****  *      Author: teodor
+   6:../../src/DLTuc.c ****  * This file is a part of DLTuc library
+   7:../../src/DLTuc.c ****  ****************************************************************************/
+   8:../../src/DLTuc.c **** 
+   9:../../src/DLTuc.c **** #include "DLTuc.h"
+  10:../../src/DLTuc.c **** 
+  11:../../src/DLTuc.c **** #include "stdio.h"
+  12:../../src/DLTuc.c **** #include "stdint.h"
+  13:../../src/DLTuc.c **** 
+  14:../../src/DLTuc.c **** #include "stdbool.h"
+  15:../../src/DLTuc.c **** #include <stdarg.h>
+  16:../../src/DLTuc.c **** #include <string.h>
+  17:../../src/DLTuc.c **** 
+  18:../../src/DLTuc.c **** 
+  19:../../src/DLTuc.c **** /**!
+  20:../../src/DLTuc.c ****  * \brief RB_Status 
+  21:../../src/DLTuc.c ****  * \details ---
+  22:../../src/DLTuc.c ****  * */
+  23:../../src/DLTuc.c **** typedef enum
+  24:../../src/DLTuc.c **** {
+  25:../../src/DLTuc.c **** 	RB_OK       = 0,
+  26:../../src/DLTuc.c **** 	RB_ERROR	= 1
+  27:../../src/DLTuc.c **** } RB_Status;
+  28:../../src/DLTuc.c **** 
+  29:../../src/DLTuc.c **** /**!
+  30:../../src/DLTuc.c ****  * \brief DltRingBuffer_t 
+  31:../../src/DLTuc.c ****  * \details ---
+  32:../../src/DLTuc.c ****  * */
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 2
+
+
+  33:../../src/DLTuc.c **** typedef struct
+  34:../../src/DLTuc.c **** {
+  35:../../src/DLTuc.c **** 	uint16_t Head; // Pointer to write
+  36:../../src/DLTuc.c **** 	uint16_t Tail; // Pointer to read
+  37:../../src/DLTuc.c **** 	uint8_t Buffer[DLT_RING_BUFFER_SIZE]; // Array to store data
+  38:../../src/DLTuc.c **** } DltRingBuffer_t;
+  39:../../src/DLTuc.c **** 
+  40:../../src/DLTuc.c **** 
+  41:../../src/DLTuc.c **** 
+  42:../../src/DLTuc.c **** /**
+  43:../../src/DLTuc.c ****  * *******************************************************************************************
+  44:../../src/DLTuc.c ****  * Static variables declaration and function prototypes
+  45:../../src/DLTuc.c ****  * *******************************************************************************************
+  46:../../src/DLTuc.c ****  * */
+  47:../../src/DLTuc.c **** 
+  48:../../src/DLTuc.c **** 
+  49:../../src/DLTuc.c **** static void (*ExtSerialTrDataFunctionCb)(uint8_t *DltLogData, uint8_t Size);
+  50:../../src/DLTuc.c **** static uint32_t (*GetSystemTimeMs)(void);
+  51:../../src/DLTuc.c **** 
+  52:../../src/DLTuc.c **** static bool LogDroppedFlag =false;
+  53:../../src/DLTuc.c **** static uint32_t PrevLogDropSendTime = 0u;
+  54:../../src/DLTuc.c **** 
+  55:../../src/DLTuc.c **** static uint8_t DltLogDroppedInfo[] = "LOG DROPPED!!!";
+  56:../../src/DLTuc.c **** static uint8_t DltLogDroppedInfoBuffer[60] = {0};
+  57:../../src/DLTuc.c **** static uint8_t DLtLogDroppedSize = 0;
+  58:../../src/DLTuc.c **** 
+  59:../../src/DLTuc.c **** static uint8_t DltDebugTmpBuf[DLT_MAX_SINGLE_MESSAGE_SIZE]; /*Buffer used to prepare single message
+  60:../../src/DLTuc.c **** 
+  61:../../src/DLTuc.c **** static uint8_t ActDltMessageCounter =0;
+  62:../../src/DLTuc.c **** 
+  63:../../src/DLTuc.c **** static DltRingBuffer_t DltRingBuffer;
+  64:../../src/DLTuc.c **** 
+  65:../../src/DLTuc.c **** static uint8_t DltMessagesTab[DLT_RING_BUFFER_SIZE][DLT_MAX_SINGLE_MESSAGE_SIZE];
+  66:../../src/DLTuc.c **** 
+  67:../../src/DLTuc.c **** static volatile uint8_t TransmitReadyStateFlag = true; /*TmpFromDma for example*/
+  68:../../src/DLTuc.c **** 
+  69:../../src/DLTuc.c **** /*brief for each funtion is added above implemention... */
+  70:../../src/DLTuc.c **** static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size);
+  71:../../src/DLTuc.c **** static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
+  72:../../src/DLTuc.c **** static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize);
+  73:../../src/DLTuc.c **** 
+  74:../../src/DLTuc.c **** /*
+  75:../../src/DLTuc.c ****  *********************************************************************************************
+  76:../../src/DLTuc.c ****  * Static function declaration section
+  77:../../src/DLTuc.c ****  ********************************************************************************************
+  78:../../src/DLTuc.c ****  */
+  79:../../src/DLTuc.c **** 
+  80:../../src/DLTuc.c **** /*!
+  81:../../src/DLTuc.c ****  ************************************************************************************************
+  82:../../src/DLTuc.c ****  * \brief DLT_RB_Read Function to read data from ring buffer
+  83:../../src/DLTuc.c ****  * \details --
+  84:../../src/DLTuc.c ****  * \param RingBuffer_t *Buf - pointer to Ring Buffer structure
+  85:../../src/DLTuc.c ****  * \param out MessageSize - size of the "DltLogData" (return value)
+  86:../../src/DLTuc.c ****  * \param out MessagePointer - pointer to the message stored in RingBuffer (return value)
+  87:../../src/DLTuc.c ****  * 
+  88:../../src/DLTuc.c ****  * */
+  89:../../src/DLTuc.c **** static RB_Status DLT_RB_Read(DltRingBuffer_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer)
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 3
+
+
+  90:../../src/DLTuc.c **** {
+  27              		.loc 1 90 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  91:../../src/DLTuc.c **** 	// Check if Tail hit Head
+  92:../../src/DLTuc.c **** 	if(Buf->Head == Buf->Tail)
+  32              		.loc 1 92 2 view .LVU1
+  33              		.loc 1 92 8 is_stmt 0 view .LVU2
+  34 0000 B0F800C0 		ldrh	ip, [r0]
+  35              		.loc 1 92 21 view .LVU3
+  36 0004 4388     		ldrh	r3, [r0, #2]
+  37              		.loc 1 92 4 view .LVU4
+  38 0006 9C45     		cmp	ip, r3
+  39 0008 15D0     		beq	.L3
+  93:../../src/DLTuc.c **** 	{
+  94:../../src/DLTuc.c **** 		// If yes - there is nothing to read
+  95:../../src/DLTuc.c **** 		return RB_ERROR;
+  96:../../src/DLTuc.c **** 	}
+  97:../../src/DLTuc.c **** 
+  98:../../src/DLTuc.c **** 	// Write current value from buffer to pointer from argument
+  99:../../src/DLTuc.c **** 	*MessageSize = Buf->Buffer[Buf->Tail];
+  40              		.loc 1 99 2 is_stmt 1 view .LVU5
+  41              		.loc 1 99 28 is_stmt 0 view .LVU6
+  42 000a 0344     		add	r3, r3, r0
+  43 000c 1B79     		ldrb	r3, [r3, #4]	@ zero_extendqisi2
+  44              		.loc 1 99 15 view .LVU7
+  45 000e 0B70     		strb	r3, [r1]
+ 100:../../src/DLTuc.c **** 	*MessagePointer = &DltMessagesTab[Buf->Tail][0];
+  46              		.loc 1 100 2 is_stmt 1 view .LVU8
+  47              		.loc 1 100 39 is_stmt 0 view .LVU9
+  48 0010 4388     		ldrh	r3, [r0, #2]
+  49              		.loc 1 100 20 view .LVU10
+  50 0012 C3EB0323 		rsb	r3, r3, r3, lsl #8
+  51 0016 0949     		ldr	r1, .L4
+  52              	.LVL1:
+  53              		.loc 1 100 20 view .LVU11
+  54 0018 0B44     		add	r3, r3, r1
+  55              		.loc 1 100 18 view .LVU12
+  56 001a 1360     		str	r3, [r2]
+ 101:../../src/DLTuc.c **** 
+ 102:../../src/DLTuc.c **** 	// Calculate new Tail pointer
+ 103:../../src/DLTuc.c **** 	Buf->Tail = (Buf->Tail + 1) % DLT_RING_BUFFER_SIZE;
+  57              		.loc 1 103 2 is_stmt 1 view .LVU13
+  58              		.loc 1 103 18 is_stmt 0 view .LVU14
+  59 001c 4288     		ldrh	r2, [r0, #2]
+  60              	.LVL2:
+  61              		.loc 1 103 25 view .LVU15
+  62 001e 0132     		adds	r2, r2, #1
+  63              		.loc 1 103 30 view .LVU16
+  64 0020 074B     		ldr	r3, .L4+4
+  65 0022 83FB0213 		smull	r1, r3, r3, r2
+  66 0026 1344     		add	r3, r3, r2
+  67 0028 DB10     		asrs	r3, r3, #3
+  68 002a C3EB0313 		rsb	r3, r3, r3, lsl #4
+  69 002e D31A     		subs	r3, r2, r3
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 4
+
+
+  70              		.loc 1 103 12 view .LVU17
+  71 0030 4380     		strh	r3, [r0, #2]	@ movhi
+ 104:../../src/DLTuc.c **** 
+ 105:../../src/DLTuc.c **** 	// Everything is ok - return OK status
+ 106:../../src/DLTuc.c **** 	return RB_OK;
+  72              		.loc 1 106 2 is_stmt 1 view .LVU18
+  73              		.loc 1 106 9 is_stmt 0 view .LVU19
+  74 0032 0020     		movs	r0, #0
+  75              	.LVL3:
+  76              		.loc 1 106 9 view .LVU20
+  77 0034 7047     		bx	lr
+  78              	.LVL4:
+  79              	.L3:
+  95:../../src/DLTuc.c **** 	}
+  80              		.loc 1 95 10 view .LVU21
+  81 0036 0120     		movs	r0, #1
+  82              	.LVL5:
+ 107:../../src/DLTuc.c **** }
+  83              		.loc 1 107 1 view .LVU22
+  84 0038 7047     		bx	lr
+  85              	.L5:
+  86 003a 00BF     		.align	2
+  87              	.L4:
+  88 003c 00000000 		.word	.LANCHOR0
+  89 0040 89888888 		.word	-2004318071
+  90              		.cfi_endproc
+  91              	.LFE68:
+  93              		.section	.text.DLT_RB_Write,"ax",%progbits
+  94              		.align	1
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  99              	DLT_RB_Write:
+ 100              	.LVL6:
+ 101              	.LFB69:
+ 108:../../src/DLTuc.c **** 
+ 109:../../src/DLTuc.c **** /*!
+ 110:../../src/DLTuc.c ****  ************************************************************************************************
+ 111:../../src/DLTuc.c ****  * \brief DLT_RB_Write
+ 112:../../src/DLTuc.c ****  * \details --
+ 113:../../src/DLTuc.c ****  * \param in RingBuffer_t *Buf - pointer to Ring Buffer structure
+ 114:../../src/DLTuc.c ****  * \param in DltLogData - pointer to the data stored in RingBuffer
+ 115:../../src/DLTuc.c ****  * \param in MessageSize - size of the "DltLogData" 
+ 116:../../src/DLTuc.c ****  ************************************************************************************************/
+ 117:../../src/DLTuc.c **** static RB_Status DLT_RB_Write(DltRingBuffer_t *Buf,uint8_t *DltLogData, uint8_t MessageSize)
+ 118:../../src/DLTuc.c **** {
+ 102              		.loc 1 118 1 is_stmt 1 view -0
+ 103              		.cfi_startproc
+ 104              		@ args = 0, pretend = 0, frame = 0
+ 105              		@ frame_needed = 0, uses_anonymous_args = 0
+ 106              		.loc 1 118 1 is_stmt 0 view .LVU24
+ 107 0000 10B5     		push	{r4, lr}
+ 108              	.LCFI0:
+ 109              		.cfi_def_cfa_offset 8
+ 110              		.cfi_offset 4, -8
+ 111              		.cfi_offset 14, -4
+ 119:../../src/DLTuc.c **** uint8_t ActualWriteIndex;
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 5
+
+
+ 112              		.loc 1 119 1 is_stmt 1 view .LVU25
+ 120:../../src/DLTuc.c **** 
+ 121:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_START();
+ 113              		.loc 1 121 1 view .LVU26
+ 114              	.LBB25:
+ 115              	.LBI25:
+ 116              		.file 2 "Drivers/CMSIS/Core/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 6
+
+
+  51:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 7
+
+
+ 108:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 117              		.loc 2 140 27 view .LVU27
+ 118              	.LBB26:
+ 141:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 119              		.loc 2 142 3 view .LVU28
+ 120              		.syntax unified
+ 121              	@ 142 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 122 0002 72B6     		cpsid i
+ 123              	@ 0 "" 2
+ 124              		.thumb
+ 125              		.syntax unified
+ 126              	.LBE26:
+ 127              	.LBE25:
+ 122:../../src/DLTuc.c **** 	// Calculate new Head pointer value
+ 123:../../src/DLTuc.c **** 	uint8_t HeadTmp = (Buf->Head + 1) % DLT_RING_BUFFER_SIZE;
+ 128              		.loc 1 123 2 view .LVU29
+ 129              		.loc 1 123 24 is_stmt 0 view .LVU30
+ 130 0004 B0F800C0 		ldrh	ip, [r0]
+ 131              		.loc 1 123 31 view .LVU31
+ 132 0008 0CF10104 		add	r4, ip, #1
+ 133              		.loc 1 123 36 view .LVU32
+ 134 000c 114B     		ldr	r3, .L13
+ 135 000e 83FB04E3 		smull	lr, r3, r3, r4
+ 136 0012 2344     		add	r3, r3, r4
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 8
+
+
+ 137 0014 DB10     		asrs	r3, r3, #3
+ 138 0016 C3EB0313 		rsb	r3, r3, r3, lsl #4
+ 139 001a E31A     		subs	r3, r4, r3
+ 140              	.LVL7:
+ 124:../../src/DLTuc.c **** 
+ 125:../../src/DLTuc.c **** 	// Check if there is one free space ahead the Head buffer
+ 126:../../src/DLTuc.c **** 	if(HeadTmp == Buf->Tail)
+ 141              		.loc 1 126 2 is_stmt 1 view .LVU33
+ 142              		.loc 1 126 13 is_stmt 0 view .LVU34
+ 143 001c DBB2     		uxtb	r3, r3
+ 144              		.loc 1 126 19 view .LVU35
+ 145 001e 4488     		ldrh	r4, [r0, #2]
+ 146              		.loc 1 126 4 view .LVU36
+ 147 0020 A342     		cmp	r3, r4
+ 148 0022 07D0     		beq	.L12
+ 127:../../src/DLTuc.c **** 	{
+ 128:../../src/DLTuc.c **** 		DLTuc_OS_CRITICAL_END();
+ 129:../../src/DLTuc.c **** 		// There is no space in the buffer - return an error
+ 130:../../src/DLTuc.c **** 		return RB_ERROR;
+ 131:../../src/DLTuc.c **** 	}
+ 132:../../src/DLTuc.c **** ActualWriteIndex = Buf->Head;
+ 149              		.loc 1 132 1 is_stmt 1 view .LVU37
+ 150              		.loc 1 132 18 is_stmt 0 view .LVU38
+ 151 0024 5FFA8CFC 		uxtb	ip, ip
+ 152              	.LVL8:
+ 133:../../src/DLTuc.c **** Buf->Head = HeadTmp;
+ 153              		.loc 1 133 1 is_stmt 1 view .LVU39
+ 154              		.loc 1 133 11 is_stmt 0 view .LVU40
+ 155 0028 0380     		strh	r3, [r0]	@ movhi
+ 134:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 156              		.loc 1 134 1 is_stmt 1 view .LVU41
+ 157              	.LBB27:
+ 158              	.LBI27:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 159              		.loc 2 129 27 view .LVU42
+ 160              	.LBB28:
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 161              		.loc 2 131 3 view .LVU43
+ 162              		.syntax unified
+ 163              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 164 002a 62B6     		cpsie i
+ 165              	@ 0 "" 2
+ 166              		.thumb
+ 167              		.syntax unified
+ 168              	.LBE28:
+ 169              	.LBE27:
+ 135:../../src/DLTuc.c **** 
+ 136:../../src/DLTuc.c **** 	// Store a value into the buffer
+ 137:../../src/DLTuc.c **** 	Buf->Buffer[ActualWriteIndex] = MessageSize;
+ 170              		.loc 1 137 2 view .LVU44
+ 171              		.loc 1 137 32 is_stmt 0 view .LVU45
+ 172 002c 6044     		add	r0, r0, ip
+ 173              	.LVL9:
+ 174              		.loc 1 137 32 view .LVU46
+ 175 002e 0271     		strb	r2, [r0, #4]
+ 138:../../src/DLTuc.c **** 
+ 139:../../src/DLTuc.c **** 	/*Copy the values to new buffer*/
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 9
+
+
+ 140:../../src/DLTuc.c **** 	for(int i=0; i<MessageSize; i++)
+ 176              		.loc 1 140 2 is_stmt 1 view .LVU47
+ 177              	.LBB29:
+ 178              		.loc 1 140 6 view .LVU48
+ 179              	.LVL10:
+ 180              		.loc 1 140 10 is_stmt 0 view .LVU49
+ 181 0030 0023     		movs	r3, #0
+ 182              	.LVL11:
+ 183              		.loc 1 140 2 view .LVU50
+ 184 0032 0BE0     		b	.L9
+ 185              	.LVL12:
+ 186              	.L12:
+ 187              		.loc 1 140 2 view .LVU51
+ 188              	.LBE29:
+ 128:../../src/DLTuc.c **** 		// There is no space in the buffer - return an error
+ 189              		.loc 1 128 3 is_stmt 1 view .LVU52
+ 190              	.LBB30:
+ 191              	.LBI30:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 192              		.loc 2 129 27 view .LVU53
+ 193              	.LBB31:
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 194              		.loc 2 131 3 view .LVU54
+ 195              		.syntax unified
+ 196              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 197 0034 62B6     		cpsie i
+ 198              	@ 0 "" 2
+ 199              		.thumb
+ 200              		.syntax unified
+ 201              	.LBE31:
+ 202              	.LBE30:
+ 130:../../src/DLTuc.c **** 	}
+ 203              		.loc 1 130 3 view .LVU55
+ 130:../../src/DLTuc.c **** 	}
+ 204              		.loc 1 130 10 is_stmt 0 view .LVU56
+ 205 0036 0120     		movs	r0, #1
+ 206              	.LVL13:
+ 130:../../src/DLTuc.c **** 	}
+ 207              		.loc 1 130 10 view .LVU57
+ 208 0038 0BE0     		b	.L8
+ 209              	.LVL14:
+ 210              	.L10:
+ 211              	.LBB32:
+ 141:../../src/DLTuc.c **** 	{
+ 142:../../src/DLTuc.c **** 		DltMessagesTab[ActualWriteIndex][i] = DltLogData[i];
+ 212              		.loc 1 142 3 is_stmt 1 discriminator 3 view .LVU58
+ 213              		.loc 1 142 51 is_stmt 0 discriminator 3 view .LVU59
+ 214 003a 11F803E0 		ldrb	lr, [r1, r3]	@ zero_extendqisi2
+ 215              		.loc 1 142 39 discriminator 3 view .LVU60
+ 216 003e CCEB0C24 		rsb	r4, ip, ip, lsl #8
+ 217 0042 0548     		ldr	r0, .L13+4
+ 218 0044 2044     		add	r0, r0, r4
+ 219 0046 00F803E0 		strb	lr, [r0, r3]
+ 140:../../src/DLTuc.c **** 	{
+ 220              		.loc 1 140 30 is_stmt 1 discriminator 3 view .LVU61
+ 140:../../src/DLTuc.c **** 	{
+ 221              		.loc 1 140 31 is_stmt 0 discriminator 3 view .LVU62
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 10
+
+
+ 222 004a 0133     		adds	r3, r3, #1
+ 223              	.LVL15:
+ 224              	.L9:
+ 140:../../src/DLTuc.c **** 	{
+ 225              		.loc 1 140 15 is_stmt 1 discriminator 1 view .LVU63
+ 140:../../src/DLTuc.c **** 	{
+ 226              		.loc 1 140 2 is_stmt 0 discriminator 1 view .LVU64
+ 227 004c 9A42     		cmp	r2, r3
+ 228 004e F4DC     		bgt	.L10
+ 229              	.LBE32:
+ 143:../../src/DLTuc.c **** 	}
+ 144:../../src/DLTuc.c **** 	// Everything is ok - return OK status
+ 145:../../src/DLTuc.c **** 	return RB_OK;
+ 230              		.loc 1 145 9 view .LVU65
+ 231 0050 0020     		movs	r0, #0
+ 232              	.LVL16:
+ 233              	.L8:
+ 146:../../src/DLTuc.c **** }
+ 234              		.loc 1 146 1 view .LVU66
+ 235 0052 10BD     		pop	{r4, pc}
+ 236              	.L14:
+ 237              		.align	2
+ 238              	.L13:
+ 239 0054 89888888 		.word	-2004318071
+ 240 0058 00000000 		.word	.LANCHOR0
+ 241              		.cfi_endproc
+ 242              	.LFE69:
+ 244              		.section	.text.PrepareHoleHeader,"ax",%progbits
+ 245              		.align	1
+ 246              		.syntax unified
+ 247              		.thumb
+ 248              		.thumb_func
+ 250              	PrepareHoleHeader:
+ 251              	.LVL17:
+ 252              	.LFB70:
+ 147:../../src/DLTuc.c **** 
+ 148:../../src/DLTuc.c **** /*!
+ 149:../../src/DLTuc.c ****  ************************************************************************************************
+ 150:../../src/DLTuc.c ****  * \brief PrepareHoleHeader
+ 151:../../src/DLTuc.c ****  * \details A very stupid implementation of DLT Header - but it works fine
+ 152:../../src/DLTuc.c ****  * It is possible create dedicated bitfiels a structure but it require time...
+ 153:../../src/DLTuc.c ****  * refer to: https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_PRS_Dia
+ 154:../../src/DLTuc.c ****  ************************************************************************************************/
+ 155:../../src/DLTuc.c **** static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size)
+ 156:../../src/DLTuc.c **** {
+ 253              		.loc 1 156 1 is_stmt 1 view -0
+ 254              		.cfi_startproc
+ 255              		@ args = 0, pretend = 0, frame = 0
+ 256              		@ frame_needed = 0, uses_anonymous_args = 0
+ 257              		.loc 1 156 1 is_stmt 0 view .LVU68
+ 258 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 259              	.LCFI1:
+ 260              		.cfi_def_cfa_offset 24
+ 261              		.cfi_offset 4, -24
+ 262              		.cfi_offset 5, -20
+ 263              		.cfi_offset 6, -16
+ 264              		.cfi_offset 7, -12
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 11
+
+
+ 265              		.cfi_offset 8, -8
+ 266              		.cfi_offset 14, -4
+ 267 0004 0546     		mov	r5, r0
+ 268 0006 0F46     		mov	r7, r1
+ 269 0008 1646     		mov	r6, r2
+ 270 000a 1C46     		mov	r4, r3
+ 157:../../src/DLTuc.c **** 	uint32_t ActualTime = 0;
+ 271              		.loc 1 157 2 is_stmt 1 view .LVU69
+ 272              	.LVL18:
+ 158:../../src/DLTuc.c **** 
+ 159:../../src/DLTuc.c **** 	if(GetSystemTimeMs != NULL)
+ 273              		.loc 1 159 2 view .LVU70
+ 274              		.loc 1 159 21 is_stmt 0 view .LVU71
+ 275 000c 2D4B     		ldr	r3, .L21
+ 276              	.LVL19:
+ 277              		.loc 1 159 21 view .LVU72
+ 278 000e 1B68     		ldr	r3, [r3]
+ 279              		.loc 1 159 4 view .LVU73
+ 280 0010 3BB1     		cbz	r3, .L19
+ 160:../../src/DLTuc.c **** 	{
+ 161:../../src/DLTuc.c **** 		ActualTime = GetSystemTimeMs() * 10; 
+ 281              		.loc 1 161 3 is_stmt 1 view .LVU74
+ 282              		.loc 1 161 16 is_stmt 0 view .LVU75
+ 283 0012 9847     		blx	r3
+ 284              	.LVL20:
+ 285              		.loc 1 161 34 view .LVU76
+ 286 0014 00EB800C 		add	ip, r0, r0, lsl #2
+ 287 0018 4FEA4C0C 		lsl	ip, ip, #1
+ 288              	.LVL21:
+ 289              	.L16:
+ 162:../../src/DLTuc.c **** 				/*Multiply by 10 to get value in MS also in DLTViewer
+ 163:../../src/DLTuc.c **** 				*Reson: Resolution in DLT Viewer is equal: 10^-4
+ 164:../../src/DLTuc.c **** 				*/
+ 165:../../src/DLTuc.c **** 	}
+ 166:../../src/DLTuc.c **** 
+ 167:../../src/DLTuc.c **** 	if(size > (254 -32) )
+ 290              		.loc 1 167 2 is_stmt 1 view .LVU77
+ 291              		.loc 1 167 4 is_stmt 0 view .LVU78
+ 292 001c DE2C     		cmp	r4, #222
+ 293 001e 03D9     		bls	.L17
+ 294              	.L18:
+ 168:../../src/DLTuc.c **** 	{
+ 169:../../src/DLTuc.c **** 		/*Error to handle or please develop this function */
+ 170:../../src/DLTuc.c **** 		while(1)
+ 295              		.loc 1 170 3 is_stmt 1 discriminator 1 view .LVU79
+ 171:../../src/DLTuc.c **** 		{
+ 172:../../src/DLTuc.c **** 			/*For develop phase lock the app*/
+ 173:../../src/DLTuc.c **** 		}
+ 296              		.loc 1 173 3 discriminator 1 view .LVU80
+ 170:../../src/DLTuc.c **** 		{
+ 297              		.loc 1 170 8 discriminator 1 view .LVU81
+ 298 0020 FEE7     		b	.L18
+ 299              	.LVL22:
+ 300              	.L19:
+ 157:../../src/DLTuc.c **** 
+ 301              		.loc 1 157 11 is_stmt 0 view .LVU82
+ 302 0022 4FF0000C 		mov	ip, #0
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 12
+
+
+ 303 0026 F9E7     		b	.L16
+ 304              	.LVL23:
+ 305              	.L17:
+ 174:../../src/DLTuc.c **** 
+ 175:../../src/DLTuc.c **** 	}
+ 176:../../src/DLTuc.c **** 
+ 177:../../src/DLTuc.c **** 
+ 178:../../src/DLTuc.c **** 	/*START HEADER*/
+ 179:../../src/DLTuc.c **** 	DltDebugTmpBuf[0] =  0x44; /*'D'*/
+ 306              		.loc 1 179 2 is_stmt 1 view .LVU83
+ 307              		.loc 1 179 20 is_stmt 0 view .LVU84
+ 308 0028 274B     		ldr	r3, .L21+4
+ 309 002a 4422     		movs	r2, #68
+ 310 002c 1A70     		strb	r2, [r3]
+ 180:../../src/DLTuc.c **** 	DltDebugTmpBuf[1] =  0x4c; /*'L'*/
+ 311              		.loc 1 180 2 is_stmt 1 view .LVU85
+ 312              		.loc 1 180 20 is_stmt 0 view .LVU86
+ 313 002e 4C22     		movs	r2, #76
+ 314 0030 5A70     		strb	r2, [r3, #1]
+ 181:../../src/DLTuc.c **** 	DltDebugTmpBuf[2] =  0x53; /*'S'*/
+ 315              		.loc 1 181 2 is_stmt 1 view .LVU87
+ 316              		.loc 1 181 20 is_stmt 0 view .LVU88
+ 317 0032 5322     		movs	r2, #83
+ 318 0034 9A70     		strb	r2, [r3, #2]
+ 182:../../src/DLTuc.c **** 	DltDebugTmpBuf[3] =  0x01; /*'0x01'*/
+ 319              		.loc 1 182 2 is_stmt 1 view .LVU89
+ 320              		.loc 1 182 20 is_stmt 0 view .LVU90
+ 321 0036 0120     		movs	r0, #1
+ 322 0038 D870     		strb	r0, [r3, #3]
+ 183:../../src/DLTuc.c **** 
+ 184:../../src/DLTuc.c **** 
+ 185:../../src/DLTuc.c **** 	DltDebugTmpBuf[4] =  0x35; /*'Dlt base header config
+ 323              		.loc 1 185 2 is_stmt 1 view .LVU91
+ 324              		.loc 1 185 20 is_stmt 0 view .LVU92
+ 325 003a 3521     		movs	r1, #53
+ 326 003c 1971     		strb	r1, [r3, #4]
+ 186:../../src/DLTuc.c **** 	* Use extended header - true
+ 187:../../src/DLTuc.c **** 	* MSBF - false
+ 188:../../src/DLTuc.c **** 	* With ECU ID - true
+ 189:../../src/DLTuc.c **** 	* With Seesion ID - false
+ 190:../../src/DLTuc.c **** 	* With time stamp - true
+ 191:../../src/DLTuc.c **** 	* version number -random
+ 192:../../src/DLTuc.c **** 	'*/
+ 193:../../src/DLTuc.c **** 
+ 194:../../src/DLTuc.c **** 	DltDebugTmpBuf[5] =  ActDltMessageCounter++; /*'Message counter value '*/
+ 327              		.loc 1 194 2 is_stmt 1 view .LVU93
+ 328              		.loc 1 194 43 is_stmt 0 view .LVU94
+ 329 003e DFF88CE0 		ldr	lr, .L21+8
+ 330 0042 9EF80010 		ldrb	r1, [lr]	@ zero_extendqisi2
+ 331 0046 01EB0008 		add	r8, r1, r0
+ 332 004a 8EF80080 		strb	r8, [lr]
+ 333              		.loc 1 194 20 view .LVU95
+ 334 004e 5971     		strb	r1, [r3, #5]
+ 195:../../src/DLTuc.c **** 
+ 196:../../src/DLTuc.c **** 	/*TODO: - it must be fixed!!!! - Length*/
+ 197:../../src/DLTuc.c **** 	DltDebugTmpBuf[6] =  0x00; /*Message length general*/
+ 335              		.loc 1 197 2 is_stmt 1 view .LVU96
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 13
+
+
+ 336              		.loc 1 197 20 is_stmt 0 view .LVU97
+ 337 0050 0021     		movs	r1, #0
+ 338 0052 9971     		strb	r1, [r3, #6]
+ 198:../../src/DLTuc.c **** //	DltDebugTmpBuf[7] =  0x37; /*'Message length general '*/
+ 199:../../src/DLTuc.c **** 	DltDebugTmpBuf[7]=28+size; /*General size */
+ 339              		.loc 1 199 2 is_stmt 1 view .LVU98
+ 340              		.loc 1 199 22 is_stmt 0 view .LVU99
+ 341 0054 E4B2     		uxtb	r4, r4
+ 342 0056 04F11C0E 		add	lr, r4, #28
+ 343              		.loc 1 199 19 view .LVU100
+ 344 005a 83F807E0 		strb	lr, [r3, #7]
+ 200:../../src/DLTuc.c **** 
+ 201:../../src/DLTuc.c **** 
+ 202:../../src/DLTuc.c **** 	uint32_t TempEcuId = DLT_LOG_ECUID_VALUE;
+ 345              		.loc 1 202 2 is_stmt 1 view .LVU101
+ 346              	.LVL24:
+ 203:../../src/DLTuc.c **** 	/*ECU ID*/
+ 204:../../src/DLTuc.c **** 	DltDebugTmpBuf[8]= ((uint8_t*)&TempEcuId)[3];
+ 347              		.loc 1 204 2 view .LVU102
+ 348              		.loc 1 204 19 is_stmt 0 view .LVU103
+ 349 005e 1A72     		strb	r2, [r3, #8]
+ 205:../../src/DLTuc.c **** 	DltDebugTmpBuf[9]= ((uint8_t*)&TempEcuId)[2];
+ 350              		.loc 1 205 2 is_stmt 1 view .LVU104
+ 351              		.loc 1 205 19 is_stmt 0 view .LVU105
+ 352 0060 5422     		movs	r2, #84
+ 353 0062 5A72     		strb	r2, [r3, #9]
+ 206:../../src/DLTuc.c **** 	DltDebugTmpBuf[10]= ((uint8_t*)&TempEcuId)[1];
+ 354              		.loc 1 206 2 is_stmt 1 view .LVU106
+ 355              		.loc 1 206 20 is_stmt 0 view .LVU107
+ 356 0064 4622     		movs	r2, #70
+ 357 0066 9A72     		strb	r2, [r3, #10]
+ 207:../../src/DLTuc.c **** 	DltDebugTmpBuf[11]= ((uint8_t*)&TempEcuId)[0];
+ 358              		.loc 1 207 2 is_stmt 1 view .LVU108
+ 359              		.loc 1 207 20 is_stmt 0 view .LVU109
+ 360 0068 3122     		movs	r2, #49
+ 361 006a DA72     		strb	r2, [r3, #11]
+ 208:../../src/DLTuc.c **** 
+ 209:../../src/DLTuc.c **** 	/*Time stamp*/
+ 210:../../src/DLTuc.c **** 	DltDebugTmpBuf[12]= ((uint8_t*)&ActualTime)[3];
+ 362              		.loc 1 210 2 is_stmt 1 view .LVU110
+ 363              		.loc 1 210 20 is_stmt 0 view .LVU111
+ 364 006c CCF30762 		ubfx	r2, ip, #24, #8
+ 365 0070 1A73     		strb	r2, [r3, #12]
+ 211:../../src/DLTuc.c **** 	DltDebugTmpBuf[13]= ((uint8_t*)&ActualTime)[2];
+ 366              		.loc 1 211 2 is_stmt 1 view .LVU112
+ 367              		.loc 1 211 20 is_stmt 0 view .LVU113
+ 368 0072 CCF30742 		ubfx	r2, ip, #16, #8
+ 369 0076 5A73     		strb	r2, [r3, #13]
+ 212:../../src/DLTuc.c **** 	DltDebugTmpBuf[14]= ((uint8_t*)&ActualTime)[1];
+ 370              		.loc 1 212 2 is_stmt 1 view .LVU114
+ 371              		.loc 1 212 20 is_stmt 0 view .LVU115
+ 372 0078 CCF30722 		ubfx	r2, ip, #8, #8
+ 373 007c 9A73     		strb	r2, [r3, #14]
+ 213:../../src/DLTuc.c **** 	DltDebugTmpBuf[15]= ((uint8_t*)&ActualTime)[0];
+ 374              		.loc 1 213 2 is_stmt 1 view .LVU116
+ 375              		.loc 1 213 20 is_stmt 0 view .LVU117
+ 376 007e 83F80FC0 		strb	ip, [r3, #15]
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 14
+
+
+ 214:../../src/DLTuc.c **** 
+ 215:../../src/DLTuc.c **** 	/*Extended header --verbose | type serial*/
+ 216:../../src/DLTuc.c **** //	DltDebugTmpBuf[16]= 0x41; /**/
+ 217:../../src/DLTuc.c **** 	DltDebugTmpBuf[16]= (Level << 4) | 1;
+ 377              		.loc 1 217 2 is_stmt 1 view .LVU118
+ 378              		.loc 1 217 29 is_stmt 0 view .LVU119
+ 379 0082 2A01     		lsls	r2, r5, #4
+ 380              		.loc 1 217 35 view .LVU120
+ 381 0084 0243     		orrs	r2, r2, r0
+ 382              		.loc 1 217 20 view .LVU121
+ 383 0086 1A74     		strb	r2, [r3, #16]
+ 218:../../src/DLTuc.c **** 
+ 219:../../src/DLTuc.c **** 	/*Number of arguments*/
+ 220:../../src/DLTuc.c **** 	DltDebugTmpBuf[17]= 0x01; /**/
+ 384              		.loc 1 220 2 is_stmt 1 view .LVU122
+ 385              		.loc 1 220 20 is_stmt 0 view .LVU123
+ 386 0088 5874     		strb	r0, [r3, #17]
+ 221:../../src/DLTuc.c **** 
+ 222:../../src/DLTuc.c **** 	/*App id */
+ 223:../../src/DLTuc.c **** 	DltDebugTmpBuf[18]= ((uint8_t*)&AppId)[3];
+ 387              		.loc 1 223 2 is_stmt 1 view .LVU124
+ 388              		.loc 1 223 20 is_stmt 0 view .LVU125
+ 389 008a C7F30762 		ubfx	r2, r7, #24, #8
+ 390 008e 9A74     		strb	r2, [r3, #18]
+ 224:../../src/DLTuc.c **** 	DltDebugTmpBuf[19]= ((uint8_t*)&AppId)[2];
+ 391              		.loc 1 224 2 is_stmt 1 view .LVU126
+ 392              		.loc 1 224 20 is_stmt 0 view .LVU127
+ 393 0090 C7F30742 		ubfx	r2, r7, #16, #8
+ 394 0094 DA74     		strb	r2, [r3, #19]
+ 225:../../src/DLTuc.c **** 	DltDebugTmpBuf[20]= ((uint8_t*)&AppId)[1];
+ 395              		.loc 1 225 2 is_stmt 1 view .LVU128
+ 396              		.loc 1 225 20 is_stmt 0 view .LVU129
+ 397 0096 C7F30722 		ubfx	r2, r7, #8, #8
+ 398 009a 1A75     		strb	r2, [r3, #20]
+ 226:../../src/DLTuc.c **** 	DltDebugTmpBuf[21]= ((uint8_t*)&AppId)[0];
+ 399              		.loc 1 226 2 is_stmt 1 view .LVU130
+ 400              		.loc 1 226 20 is_stmt 0 view .LVU131
+ 401 009c 5F75     		strb	r7, [r3, #21]
+ 227:../../src/DLTuc.c **** 
+ 228:../../src/DLTuc.c **** 	/*Contex ID  (4 bajty*/
+ 229:../../src/DLTuc.c **** 	DltDebugTmpBuf[22]= ((uint8_t*)&ContextId)[3];
+ 402              		.loc 1 229 2 is_stmt 1 view .LVU132
+ 403              		.loc 1 229 20 is_stmt 0 view .LVU133
+ 404 009e C6F30762 		ubfx	r2, r6, #24, #8
+ 405 00a2 9A75     		strb	r2, [r3, #22]
+ 230:../../src/DLTuc.c **** 	DltDebugTmpBuf[23]= ((uint8_t*)&ContextId)[2];
+ 406              		.loc 1 230 2 is_stmt 1 view .LVU134
+ 407              		.loc 1 230 20 is_stmt 0 view .LVU135
+ 408 00a4 C6F30742 		ubfx	r2, r6, #16, #8
+ 409 00a8 DA75     		strb	r2, [r3, #23]
+ 231:../../src/DLTuc.c **** 	DltDebugTmpBuf[24]= ((uint8_t*)&ContextId)[1];
+ 410              		.loc 1 231 2 is_stmt 1 view .LVU136
+ 411              		.loc 1 231 20 is_stmt 0 view .LVU137
+ 412 00aa C6F30722 		ubfx	r2, r6, #8, #8
+ 413 00ae 1A76     		strb	r2, [r3, #24]
+ 232:../../src/DLTuc.c **** 	DltDebugTmpBuf[25]= ((uint8_t*)&ContextId)[0];
+ 414              		.loc 1 232 2 is_stmt 1 view .LVU138
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 15
+
+
+ 415              		.loc 1 232 20 is_stmt 0 view .LVU139
+ 416 00b0 5E76     		strb	r6, [r3, #25]
+ 233:../../src/DLTuc.c **** 
+ 234:../../src/DLTuc.c **** 	/*Type info*/
+ 235:../../src/DLTuc.c **** 	DltDebugTmpBuf[26]= 0x01; /**/
+ 417              		.loc 1 235 2 is_stmt 1 view .LVU140
+ 418              		.loc 1 235 20 is_stmt 0 view .LVU141
+ 419 00b2 9876     		strb	r0, [r3, #26]
+ 236:../../src/DLTuc.c **** 	DltDebugTmpBuf[27]= 0x82; /**/
+ 420              		.loc 1 236 2 is_stmt 1 view .LVU142
+ 421              		.loc 1 236 20 is_stmt 0 view .LVU143
+ 422 00b4 8222     		movs	r2, #130
+ 423 00b6 DA76     		strb	r2, [r3, #27]
+ 237:../../src/DLTuc.c **** 	DltDebugTmpBuf[28]= 0x00; /**/
+ 424              		.loc 1 237 2 is_stmt 1 view .LVU144
+ 425              		.loc 1 237 20 is_stmt 0 view .LVU145
+ 426 00b8 1977     		strb	r1, [r3, #28]
+ 238:../../src/DLTuc.c **** 	DltDebugTmpBuf[29]= 0x00; /**/
+ 427              		.loc 1 238 2 is_stmt 1 view .LVU146
+ 428              		.loc 1 238 20 is_stmt 0 view .LVU147
+ 429 00ba 5977     		strb	r1, [r3, #29]
+ 239:../../src/DLTuc.c **** 
+ 240:../../src/DLTuc.c **** 	/*Argument 1*/
+ 241:../../src/DLTuc.c **** 	DltDebugTmpBuf[30]= size; /*the size of the load in simplified form, but not exactly but generally
+ 430              		.loc 1 241 2 is_stmt 1 view .LVU148
+ 431              		.loc 1 241 20 is_stmt 0 view .LVU149
+ 432 00bc 9C77     		strb	r4, [r3, #30]
+ 242:../../src/DLTuc.c **** 	DltDebugTmpBuf[31]= 0x00; /**/
+ 433              		.loc 1 242 2 is_stmt 1 view .LVU150
+ 434              		.loc 1 242 20 is_stmt 0 view .LVU151
+ 435 00be D977     		strb	r1, [r3, #31]
+ 436              	.LVL25:
+ 243:../../src/DLTuc.c **** }
+ 437              		.loc 1 243 1 view .LVU152
+ 438 00c0 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 439              	.LVL26:
+ 440              	.L22:
+ 441              		.loc 1 243 1 view .LVU153
+ 442              		.align	2
+ 443              	.L21:
+ 444 00c4 00000000 		.word	.LANCHOR1
+ 445 00c8 00000000 		.word	.LANCHOR2
+ 446 00cc 00000000 		.word	.LANCHOR3
+ 447              		.cfi_endproc
+ 448              	.LFE70:
+ 450              		.section	.text.DLTuc_RegisterTransmitSerialDataCallback,"ax",%progbits
+ 451              		.align	1
+ 452              		.global	DLTuc_RegisterTransmitSerialDataCallback
+ 453              		.syntax unified
+ 454              		.thumb
+ 455              		.thumb_func
+ 457              	DLTuc_RegisterTransmitSerialDataCallback:
+ 458              	.LVL27:
+ 459              	.LFB71:
+ 244:../../src/DLTuc.c **** 
+ 245:../../src/DLTuc.c **** 
+ 246:../../src/DLTuc.c **** /*
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 16
+
+
+ 247:../../src/DLTuc.c ****  **************************************************************************************************
+ 248:../../src/DLTuc.c ****  * API Function declarations section START
+ 249:../../src/DLTuc.c ****  * Api function description is in header file
+ 250:../../src/DLTuc.c ****  **************************************************************************************************
+ 251:../../src/DLTuc.c ****  */
+ 252:../../src/DLTuc.c **** 
+ 253:../../src/DLTuc.c **** void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uin
+ 254:../../src/DLTuc.c **** {
+ 460              		.loc 1 254 1 is_stmt 1 view -0
+ 461              		.cfi_startproc
+ 462              		@ args = 0, pretend = 0, frame = 0
+ 463              		@ frame_needed = 0, uses_anonymous_args = 0
+ 464              		.loc 1 254 1 is_stmt 0 view .LVU155
+ 465 0000 08B5     		push	{r3, lr}
+ 466              	.LCFI2:
+ 467              		.cfi_def_cfa_offset 8
+ 468              		.cfi_offset 3, -8
+ 469              		.cfi_offset 14, -4
+ 255:../../src/DLTuc.c **** 	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionC;
+ 470              		.loc 1 255 2 is_stmt 1 view .LVU156
+ 471              		.loc 1 255 28 is_stmt 0 view .LVU157
+ 472 0002 104B     		ldr	r3, .L29
+ 473 0004 1860     		str	r0, [r3]
+ 256:../../src/DLTuc.c **** 
+ 257:../../src/DLTuc.c **** 	/*Preapre LOG DROPPED Info Log*/
+ 258:../../src/DLTuc.c **** 	PrepareHoleHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );
+ 474              		.loc 1 258 2 is_stmt 1 view .LVU158
+ 475 0006 1049     		ldr	r1, .L29+4
+ 476 0008 0F23     		movs	r3, #15
+ 477 000a 0A46     		mov	r2, r1
+ 478 000c 0220     		movs	r0, #2
+ 479              	.LVL28:
+ 480              		.loc 1 258 2 is_stmt 0 view .LVU159
+ 481 000e FFF7FEFF 		bl	PrepareHoleHeader
+ 482              	.LVL29:
+ 259:../../src/DLTuc.c **** 
+ 260:../../src/DLTuc.c **** 	/*Payload!!!*/
+ 261:../../src/DLTuc.c **** 	/*Copy payload text temporary*/
+ 262:../../src/DLTuc.c **** 	for(int i=DLT_ACT_HOLE_HEADER_SIZE; i<(sizeof(DltLogDroppedInfo)+DLT_ACT_HOLE_HEADER_SIZE); i++)
+ 483              		.loc 1 262 2 is_stmt 1 view .LVU160
+ 484              	.LBB33:
+ 485              		.loc 1 262 6 view .LVU161
+ 486              		.loc 1 262 10 is_stmt 0 view .LVU162
+ 487 0012 2023     		movs	r3, #32
+ 488              		.loc 1 262 2 view .LVU163
+ 489 0014 06E0     		b	.L24
+ 490              	.LVL30:
+ 491              	.L25:
+ 263:../../src/DLTuc.c **** 	{
+ 264:../../src/DLTuc.c **** 		DltDebugTmpBuf[i]= DltLogDroppedInfo[i-DLT_ACT_HOLE_HEADER_SIZE];
+ 492              		.loc 1 264 3 is_stmt 1 discriminator 3 view .LVU164
+ 493              		.loc 1 264 41 is_stmt 0 discriminator 3 view .LVU165
+ 494 0016 A3F12002 		sub	r2, r3, #32
+ 495              		.loc 1 264 39 discriminator 3 view .LVU166
+ 496 001a 0C49     		ldr	r1, .L29+8
+ 497 001c 895C     		ldrb	r1, [r1, r2]	@ zero_extendqisi2
+ 498              		.loc 1 264 20 discriminator 3 view .LVU167
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 17
+
+
+ 499 001e 0C4A     		ldr	r2, .L29+12
+ 500 0020 D154     		strb	r1, [r2, r3]
+ 262:../../src/DLTuc.c **** 	{
+ 501              		.loc 1 262 94 is_stmt 1 discriminator 3 view .LVU168
+ 262:../../src/DLTuc.c **** 	{
+ 502              		.loc 1 262 95 is_stmt 0 discriminator 3 view .LVU169
+ 503 0022 0133     		adds	r3, r3, #1
+ 504              	.LVL31:
+ 505              	.L24:
+ 262:../../src/DLTuc.c **** 	{
+ 506              		.loc 1 262 38 is_stmt 1 discriminator 1 view .LVU170
+ 262:../../src/DLTuc.c **** 	{
+ 507              		.loc 1 262 2 is_stmt 0 discriminator 1 view .LVU171
+ 508 0024 2E2B     		cmp	r3, #46
+ 509 0026 F6D9     		bls	.L25
+ 510              	.LBE33:
+ 511              	.LBB34:
+ 265:../../src/DLTuc.c **** 	}
+ 266:../../src/DLTuc.c **** 
+ 267:../../src/DLTuc.c **** 	for(int i=0; i<sizeof(DltLogDroppedInfoBuffer); i++)
+ 512              		.loc 1 267 10 view .LVU172
+ 513 0028 0023     		movs	r3, #0
+ 514              	.LVL32:
+ 515              		.loc 1 267 10 view .LVU173
+ 516 002a 04E0     		b	.L26
+ 517              	.LVL33:
+ 518              	.L27:
+ 268:../../src/DLTuc.c **** 	{
+ 269:../../src/DLTuc.c **** 		DltLogDroppedInfoBuffer[i] = DltDebugTmpBuf[i];
+ 519              		.loc 1 269 3 is_stmt 1 discriminator 3 view .LVU174
+ 520              		.loc 1 269 46 is_stmt 0 discriminator 3 view .LVU175
+ 521 002c 084A     		ldr	r2, .L29+12
+ 522 002e D15C     		ldrb	r1, [r2, r3]	@ zero_extendqisi2
+ 523              		.loc 1 269 30 discriminator 3 view .LVU176
+ 524 0030 084A     		ldr	r2, .L29+16
+ 525 0032 D154     		strb	r1, [r2, r3]
+ 267:../../src/DLTuc.c **** 	{
+ 526              		.loc 1 267 50 is_stmt 1 discriminator 3 view .LVU177
+ 267:../../src/DLTuc.c **** 	{
+ 527              		.loc 1 267 51 is_stmt 0 discriminator 3 view .LVU178
+ 528 0034 0133     		adds	r3, r3, #1
+ 529              	.LVL34:
+ 530              	.L26:
+ 267:../../src/DLTuc.c **** 	{
+ 531              		.loc 1 267 15 is_stmt 1 discriminator 1 view .LVU179
+ 267:../../src/DLTuc.c **** 	{
+ 532              		.loc 1 267 2 is_stmt 0 discriminator 1 view .LVU180
+ 533 0036 3B2B     		cmp	r3, #59
+ 534 0038 F8D9     		bls	.L27
+ 535              	.LBE34:
+ 270:../../src/DLTuc.c **** 	}
+ 271:../../src/DLTuc.c **** 
+ 272:../../src/DLTuc.c **** 	DLtLogDroppedSize = DLT_ACT_HOLE_HEADER_SIZE + sizeof(DltLogDroppedInfo);
+ 536              		.loc 1 272 2 is_stmt 1 view .LVU181
+ 537              		.loc 1 272 20 is_stmt 0 view .LVU182
+ 538 003a 074B     		ldr	r3, .L29+20
+ 539              	.LVL35:
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 18
+
+
+ 540              		.loc 1 272 20 view .LVU183
+ 541 003c 2F22     		movs	r2, #47
+ 542 003e 1A70     		strb	r2, [r3]
+ 273:../../src/DLTuc.c **** }
+ 543              		.loc 1 273 1 view .LVU184
+ 544 0040 08BD     		pop	{r3, pc}
+ 545              	.L30:
+ 546 0042 00BF     		.align	2
+ 547              	.L29:
+ 548 0044 00000000 		.word	.LANCHOR4
+ 549 0048 43544C44 		.word	1145852995
+ 550 004c 00000000 		.word	.LANCHOR5
+ 551 0050 00000000 		.word	.LANCHOR2
+ 552 0054 00000000 		.word	.LANCHOR6
+ 553 0058 00000000 		.word	.LANCHOR7
+ 554              		.cfi_endproc
+ 555              	.LFE71:
+ 557              		.section	.text.DLTuc_MessageTransmitDone,"ax",%progbits
+ 558              		.align	1
+ 559              		.global	DLTuc_MessageTransmitDone
+ 560              		.syntax unified
+ 561              		.thumb
+ 562              		.thumb_func
+ 564              	DLTuc_MessageTransmitDone:
+ 565              	.LFB72:
+ 274:../../src/DLTuc.c **** /******************************************************************************************/
+ 275:../../src/DLTuc.c **** void DLTuc_MessageTransmitDone(void)
+ 276:../../src/DLTuc.c **** {
+ 566              		.loc 1 276 1 is_stmt 1 view -0
+ 567              		.cfi_startproc
+ 568              		@ args = 0, pretend = 0, frame = 8
+ 569              		@ frame_needed = 0, uses_anonymous_args = 0
+ 570 0000 00B5     		push	{lr}
+ 571              	.LCFI3:
+ 572              		.cfi_def_cfa_offset 4
+ 573              		.cfi_offset 14, -4
+ 574 0002 83B0     		sub	sp, sp, #12
+ 575              	.LCFI4:
+ 576              		.cfi_def_cfa_offset 16
+ 277:../../src/DLTuc.c **** 	uint8_t TmpMessageSize=0;
+ 577              		.loc 1 277 2 view .LVU186
+ 578              		.loc 1 277 10 is_stmt 0 view .LVU187
+ 579 0004 0023     		movs	r3, #0
+ 580 0006 8DF80730 		strb	r3, [sp, #7]
+ 278:../../src/DLTuc.c **** 	uint8_t *TmpMessagePointer = NULL;
+ 581              		.loc 1 278 2 is_stmt 1 view .LVU188
+ 582              		.loc 1 278 11 is_stmt 0 view .LVU189
+ 583 000a 0093     		str	r3, [sp]
+ 279:../../src/DLTuc.c **** 	uint32_t ActualSysTime = 0u;
+ 584              		.loc 1 279 2 is_stmt 1 view .LVU190
+ 585              	.LVL36:
+ 280:../../src/DLTuc.c **** 
+ 281:../../src/DLTuc.c **** 	if(GetSystemTimeMs != NULL)
+ 586              		.loc 1 281 2 view .LVU191
+ 587              		.loc 1 281 21 is_stmt 0 view .LVU192
+ 588 000c 1A4B     		ldr	r3, .L41
+ 589 000e 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 19
+
+
+ 590              		.loc 1 281 4 view .LVU193
+ 591 0010 DBB1     		cbz	r3, .L38
+ 282:../../src/DLTuc.c **** 	{
+ 283:../../src/DLTuc.c **** 		ActualSysTime = GetSystemTimeMs();
+ 592              		.loc 1 283 3 is_stmt 1 view .LVU194
+ 593              		.loc 1 283 19 is_stmt 0 view .LVU195
+ 594 0012 9847     		blx	r3
+ 595              	.LVL37:
+ 596              	.L32:
+ 284:../../src/DLTuc.c **** 	}
+ 285:../../src/DLTuc.c **** 
+ 286:../../src/DLTuc.c **** 	if(LogDroppedFlag == true && (ActualSysTime - PrevLogDropSendTime > 200) )
+ 597              		.loc 1 286 2 is_stmt 1 view .LVU196
+ 598              		.loc 1 286 20 is_stmt 0 view .LVU197
+ 599 0014 194B     		ldr	r3, .L41+4
+ 600 0016 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 601              		.loc 1 286 4 view .LVU198
+ 602 0018 23B1     		cbz	r3, .L33
+ 603              		.loc 1 286 46 discriminator 1 view .LVU199
+ 604 001a 194B     		ldr	r3, .L41+8
+ 605 001c 1B68     		ldr	r3, [r3]
+ 606 001e C31A     		subs	r3, r0, r3
+ 607              		.loc 1 286 28 discriminator 1 view .LVU200
+ 608 0020 C82B     		cmp	r3, #200
+ 609 0022 14D8     		bhi	.L40
+ 610              	.L33:
+ 287:../../src/DLTuc.c **** 	{
+ 288:../../src/DLTuc.c **** 		/*To avoid blocking read messages becuase of message storm..*/
+ 289:../../src/DLTuc.c **** 		PrevLogDropSendTime = ActualSysTime;
+ 290:../../src/DLTuc.c **** 		LogDroppedFlag = false;
+ 291:../../src/DLTuc.c **** 
+ 292:../../src/DLTuc.c **** 		if(ExtSerialTrDataFunctionCb != NULL)
+ 293:../../src/DLTuc.c **** 		{
+ 294:../../src/DLTuc.c **** 			ExtSerialTrDataFunctionCb(DltLogDroppedInfoBuffer, DLtLogDroppedSize);
+ 295:../../src/DLTuc.c **** 		}
+ 296:../../src/DLTuc.c **** 		return;
+ 297:../../src/DLTuc.c **** 	}
+ 298:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_START();
+ 611              		.loc 1 298 1 is_stmt 1 view .LVU201
+ 612              	.LBB35:
+ 613              	.LBI35:
+ 140:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 614              		.loc 2 140 27 view .LVU202
+ 615              	.LBB36:
+ 616              		.loc 2 142 3 view .LVU203
+ 617              		.syntax unified
+ 618              	@ 142 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 619 0024 72B6     		cpsid i
+ 620              	@ 0 "" 2
+ 621              		.thumb
+ 622              		.syntax unified
+ 623              	.LBE36:
+ 624              	.LBE35:
+ 299:../../src/DLTuc.c **** 	if(DLT_RB_Read(&DltRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
+ 625              		.loc 1 299 2 view .LVU204
+ 626              		.loc 1 299 5 is_stmt 0 view .LVU205
+ 627 0026 6A46     		mov	r2, sp
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 20
+
+
+ 628 0028 0DF10701 		add	r1, sp, #7
+ 629 002c 1548     		ldr	r0, .L41+12
+ 630              	.LVL38:
+ 631              		.loc 1 299 5 view .LVU206
+ 632 002e FFF7FEFF 		bl	DLT_RB_Read
+ 633              	.LVL39:
+ 634              		.loc 1 299 4 view .LVU207
+ 635 0032 C8B9     		cbnz	r0, .L36
+ 300:../../src/DLTuc.c **** 	{
+ 301:../../src/DLTuc.c **** 		if(ExtSerialTrDataFunctionCb != NULL)
+ 636              		.loc 1 301 3 is_stmt 1 view .LVU208
+ 637              		.loc 1 301 32 is_stmt 0 view .LVU209
+ 638 0034 144B     		ldr	r3, .L41+16
+ 639 0036 1B68     		ldr	r3, [r3]
+ 640              		.loc 1 301 5 view .LVU210
+ 641 0038 CBB1     		cbz	r3, .L37
+ 302:../../src/DLTuc.c **** 		{
+ 303:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 642              		.loc 1 303 1 is_stmt 1 view .LVU211
+ 643              	.LBB37:
+ 644              	.LBI37:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 645              		.loc 2 129 27 view .LVU212
+ 646              	.LBB38:
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 647              		.loc 2 131 3 view .LVU213
+ 648              		.syntax unified
+ 649              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 650 003a 62B6     		cpsie i
+ 651              	@ 0 "" 2
+ 652              		.thumb
+ 653              		.syntax unified
+ 654              	.LBE38:
+ 655              	.LBE37:
+ 304:../../src/DLTuc.c **** 			ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
+ 656              		.loc 1 304 4 view .LVU214
+ 657 003c 124B     		ldr	r3, .L41+16
+ 658 003e 1B68     		ldr	r3, [r3]
+ 659 0040 9DF80710 		ldrb	r1, [sp, #7]	@ zero_extendqisi2
+ 660 0044 0098     		ldr	r0, [sp]
+ 661 0046 9847     		blx	r3
+ 662              	.LVL40:
+ 663 0048 11E0     		b	.L37
+ 664              	.LVL41:
+ 665              	.L38:
+ 279:../../src/DLTuc.c **** 
+ 666              		.loc 1 279 11 is_stmt 0 view .LVU215
+ 667 004a 0020     		movs	r0, #0
+ 668 004c E2E7     		b	.L32
+ 669              	.LVL42:
+ 670              	.L40:
+ 289:../../src/DLTuc.c **** 		LogDroppedFlag = false;
+ 671              		.loc 1 289 3 is_stmt 1 view .LVU216
+ 289:../../src/DLTuc.c **** 		LogDroppedFlag = false;
+ 672              		.loc 1 289 23 is_stmt 0 view .LVU217
+ 673 004e 0C4B     		ldr	r3, .L41+8
+ 674 0050 1860     		str	r0, [r3]
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 21
+
+
+ 290:../../src/DLTuc.c **** 
+ 675              		.loc 1 290 3 is_stmt 1 view .LVU218
+ 290:../../src/DLTuc.c **** 
+ 676              		.loc 1 290 18 is_stmt 0 view .LVU219
+ 677 0052 0A4B     		ldr	r3, .L41+4
+ 678 0054 0022     		movs	r2, #0
+ 679 0056 1A70     		strb	r2, [r3]
+ 292:../../src/DLTuc.c **** 		{
+ 680              		.loc 1 292 3 is_stmt 1 view .LVU220
+ 292:../../src/DLTuc.c **** 		{
+ 681              		.loc 1 292 32 is_stmt 0 view .LVU221
+ 682 0058 0B4B     		ldr	r3, .L41+16
+ 683 005a 1B68     		ldr	r3, [r3]
+ 292:../../src/DLTuc.c **** 		{
+ 684              		.loc 1 292 5 view .LVU222
+ 685 005c 43B1     		cbz	r3, .L31
+ 294:../../src/DLTuc.c **** 		}
+ 686              		.loc 1 294 4 is_stmt 1 view .LVU223
+ 687 005e 0B4A     		ldr	r2, .L41+20
+ 688 0060 1178     		ldrb	r1, [r2]	@ zero_extendqisi2
+ 689 0062 0B48     		ldr	r0, .L41+24
+ 690              	.LVL43:
+ 294:../../src/DLTuc.c **** 		}
+ 691              		.loc 1 294 4 is_stmt 0 view .LVU224
+ 692 0064 9847     		blx	r3
+ 693              	.LVL44:
+ 296:../../src/DLTuc.c **** 	}
+ 694              		.loc 1 296 3 is_stmt 1 view .LVU225
+ 695 0066 03E0     		b	.L31
+ 696              	.L36:
+ 305:../../src/DLTuc.c **** 		}
+ 306:../../src/DLTuc.c **** 	}
+ 307:../../src/DLTuc.c **** 	else
+ 308:../../src/DLTuc.c **** 	{
+ 309:../../src/DLTuc.c **** 		TransmitReadyStateFlag = true;
+ 697              		.loc 1 309 3 view .LVU226
+ 698              		.loc 1 309 26 is_stmt 0 view .LVU227
+ 699 0068 0A4B     		ldr	r3, .L41+28
+ 700 006a 0122     		movs	r2, #1
+ 701 006c 1A70     		strb	r2, [r3]
+ 702              	.L37:
+ 310:../../src/DLTuc.c **** 	}
+ 311:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 703              		.loc 1 311 1 is_stmt 1 discriminator 1 view .LVU228
+ 704              	.LBB39:
+ 705              	.LBI39:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 706              		.loc 2 129 27 discriminator 1 view .LVU229
+ 707              	.LBB40:
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 708              		.loc 2 131 3 discriminator 1 view .LVU230
+ 709              		.syntax unified
+ 710              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 711 006e 62B6     		cpsie i
+ 712              	@ 0 "" 2
+ 713              		.thumb
+ 714              		.syntax unified
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 22
+
+
+ 715              	.L31:
+ 716              	.LBE40:
+ 717              	.LBE39:
+ 312:../../src/DLTuc.c **** }
+ 718              		.loc 1 312 1 is_stmt 0 view .LVU231
+ 719 0070 03B0     		add	sp, sp, #12
+ 720              	.LCFI5:
+ 721              		.cfi_def_cfa_offset 4
+ 722              		@ sp needed
+ 723 0072 5DF804FB 		ldr	pc, [sp], #4
+ 724              	.L42:
+ 725 0076 00BF     		.align	2
+ 726              	.L41:
+ 727 0078 00000000 		.word	.LANCHOR1
+ 728 007c 00000000 		.word	.LANCHOR8
+ 729 0080 00000000 		.word	.LANCHOR9
+ 730 0084 00000000 		.word	.LANCHOR10
+ 731 0088 00000000 		.word	.LANCHOR4
+ 732 008c 00000000 		.word	.LANCHOR7
+ 733 0090 00000000 		.word	.LANCHOR6
+ 734 0094 00000000 		.word	.LANCHOR11
+ 735              		.cfi_endproc
+ 736              	.LFE72:
+ 738              		.section	.text.DLTuc_LogOutVarArgs,"ax",%progbits
+ 739              		.align	1
+ 740              		.global	DLTuc_LogOutVarArgs
+ 741              		.syntax unified
+ 742              		.thumb
+ 743              		.thumb_func
+ 745              	DLTuc_LogOutVarArgs:
+ 746              	.LVL45:
+ 747              	.LFB73:
+ 313:../../src/DLTuc.c **** 
+ 314:../../src/DLTuc.c **** /******************************************************************************************/
+ 315:../../src/DLTuc.c **** void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload,
+ 316:../../src/DLTuc.c **** {
+ 748              		.loc 1 316 1 is_stmt 1 view -0
+ 749              		.cfi_startproc
+ 750              		@ args = 4, pretend = 4, frame = 16
+ 751              		@ frame_needed = 0, uses_anonymous_args = 1
+ 752              		.loc 1 316 1 is_stmt 0 view .LVU233
+ 753 0000 08B4     		push	{r3}
+ 754              	.LCFI6:
+ 755              		.cfi_def_cfa_offset 4
+ 756              		.cfi_offset 3, -4
+ 757 0002 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 758              	.LCFI7:
+ 759              		.cfi_def_cfa_offset 28
+ 760              		.cfi_offset 4, -28
+ 761              		.cfi_offset 5, -24
+ 762              		.cfi_offset 6, -20
+ 763              		.cfi_offset 7, -16
+ 764              		.cfi_offset 8, -12
+ 765              		.cfi_offset 14, -8
+ 766 0006 85B0     		sub	sp, sp, #20
+ 767              	.LCFI8:
+ 768              		.cfi_def_cfa_offset 48
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 23
+
+
+ 769 0008 0646     		mov	r6, r0
+ 770 000a 0F46     		mov	r7, r1
+ 771 000c 9046     		mov	r8, r2
+ 772 000e 0BAA     		add	r2, sp, #44
+ 773 0010 52F8041B 		ldr	r1, [r2], #4
+ 774              	.LVL46:
+ 317:../../src/DLTuc.c **** va_list ap;
+ 775              		.loc 1 317 1 is_stmt 1 view .LVU234
+ 318:../../src/DLTuc.c **** uint16_t Size;
+ 776              		.loc 1 318 1 view .LVU235
+ 319:../../src/DLTuc.c **** 
+ 320:../../src/DLTuc.c **** 	va_start(ap, Payload);
+ 777              		.loc 1 320 2 view .LVU236
+ 778 0014 0392     		str	r2, [sp, #12]
+ 321:../../src/DLTuc.c **** 	Size = vsprintf((char *)DltDebugTmpBuf + DLT_ACT_HOLE_HEADER_SIZE, (char *)Payload,ap);
+ 779              		.loc 1 321 2 view .LVU237
+ 780              		.loc 1 321 9 is_stmt 0 view .LVU238
+ 781 0016 234D     		ldr	r5, .L48
+ 782 0018 05F12000 		add	r0, r5, #32
+ 783              	.LVL47:
+ 784              		.loc 1 321 9 view .LVU239
+ 785 001c FFF7FEFF 		bl	vsprintf
+ 786              	.LVL48:
+ 787              		.loc 1 321 7 view .LVU240
+ 788 0020 84B2     		uxth	r4, r0
+ 789              	.LVL49:
+ 322:../../src/DLTuc.c **** 	va_end(ap);
+ 790              		.loc 1 322 2 is_stmt 1 view .LVU241
+ 323:../../src/DLTuc.c **** 
+ 324:../../src/DLTuc.c **** 	/*Additional zero on the end of message -therefore it works with more stability */
+ 325:../../src/DLTuc.c **** 	Size++;
+ 791              		.loc 1 325 2 view .LVU242
+ 792              		.loc 1 325 6 is_stmt 0 view .LVU243
+ 793 0022 631C     		adds	r3, r4, #1
+ 794 0024 9BB2     		uxth	r3, r3
+ 795              	.LVL50:
+ 326:../../src/DLTuc.c **** 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
+ 796              		.loc 1 326 2 is_stmt 1 view .LVU244
+ 797              		.loc 1 326 42 is_stmt 0 view .LVU245
+ 798 0026 2033     		adds	r3, r3, #32
+ 799              	.LVL51:
+ 800              		.loc 1 326 50 view .LVU246
+ 801 0028 0022     		movs	r2, #0
+ 802 002a EA54     		strb	r2, [r5, r3]
+ 327:../../src/DLTuc.c **** 	Size++;
+ 803              		.loc 1 327 2 is_stmt 1 view .LVU247
+ 804              		.loc 1 327 6 is_stmt 0 view .LVU248
+ 805 002c A31C     		adds	r3, r4, #2
+ 806              	.LVL52:
+ 807              		.loc 1 327 6 view .LVU249
+ 808 002e 9BB2     		uxth	r3, r3
+ 809              	.LVL53:
+ 328:../../src/DLTuc.c **** 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
+ 810              		.loc 1 328 2 is_stmt 1 view .LVU250
+ 811              		.loc 1 328 42 is_stmt 0 view .LVU251
+ 812 0030 03F12001 		add	r1, r3, #32
+ 813              		.loc 1 328 50 view .LVU252
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 24
+
+
+ 814 0034 6A54     		strb	r2, [r5, r1]
+ 329:../../src/DLTuc.c **** 
+ 330:../../src/DLTuc.c **** 	PrepareHoleHeader(Level,AppId,ContextId,Size);
+ 815              		.loc 1 330 2 is_stmt 1 view .LVU253
+ 816 0036 4246     		mov	r2, r8
+ 817 0038 3946     		mov	r1, r7
+ 818 003a 3046     		mov	r0, r6
+ 819 003c FFF7FEFF 		bl	PrepareHoleHeader
+ 820              	.LVL54:
+ 331:../../src/DLTuc.c **** 	Size = Size +DLT_ACT_HOLE_HEADER_SIZE;
+ 821              		.loc 1 331 2 view .LVU254
+ 822              		.loc 1 331 7 is_stmt 0 view .LVU255
+ 823 0040 04F12202 		add	r2, r4, #34
+ 824              	.LVL55:
+ 332:../../src/DLTuc.c **** 
+ 333:../../src/DLTuc.c **** 	if(DLT_RB_Write(&DltRingBuffer,DltDebugTmpBuf, Size) != RB_OK)
+ 825              		.loc 1 333 2 is_stmt 1 view .LVU256
+ 826              		.loc 1 333 5 is_stmt 0 view .LVU257
+ 827 0044 D2B2     		uxtb	r2, r2
+ 828              	.LVL56:
+ 829              		.loc 1 333 5 view .LVU258
+ 830 0046 2946     		mov	r1, r5
+ 831 0048 1748     		ldr	r0, .L48+4
+ 832 004a FFF7FEFF 		bl	DLT_RB_Write
+ 833              	.LVL57:
+ 834              		.loc 1 333 4 view .LVU259
+ 835 004e 20B1     		cbz	r0, .L44
+ 334:../../src/DLTuc.c **** 	{
+ 335:../../src/DLTuc.c **** 		DLTuc_OS_CRITICAL_START();
+ 836              		.loc 1 335 3 is_stmt 1 view .LVU260
+ 837              	.LBB41:
+ 838              	.LBI41:
+ 140:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 839              		.loc 2 140 27 view .LVU261
+ 840              	.LBB42:
+ 841              		.loc 2 142 3 view .LVU262
+ 842              		.syntax unified
+ 843              	@ 142 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 844 0050 72B6     		cpsid i
+ 845              	@ 0 "" 2
+ 846              		.thumb
+ 847              		.syntax unified
+ 848              	.LBE42:
+ 849              	.LBE41:
+ 336:../../src/DLTuc.c **** 		LogDroppedFlag = true;
+ 850              		.loc 1 336 3 view .LVU263
+ 851              		.loc 1 336 18 is_stmt 0 view .LVU264
+ 852 0052 164B     		ldr	r3, .L48+8
+ 853 0054 0122     		movs	r2, #1
+ 854 0056 1A70     		strb	r2, [r3]
+ 337:../../src/DLTuc.c **** 		DLTuc_OS_CRITICAL_END();
+ 855              		.loc 1 337 3 is_stmt 1 view .LVU265
+ 856              	.LBB43:
+ 857              	.LBI43:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 858              		.loc 2 129 27 view .LVU266
+ 859              	.LBB44:
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 25
+
+
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 860              		.loc 2 131 3 view .LVU267
+ 861              		.syntax unified
+ 862              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 863 0058 62B6     		cpsie i
+ 864              	@ 0 "" 2
+ 865              		.thumb
+ 866              		.syntax unified
+ 867              	.L44:
+ 868              	.LBE44:
+ 869              	.LBE43:
+ 338:../../src/DLTuc.c **** 	}
+ 339:../../src/DLTuc.c **** 
+ 340:../../src/DLTuc.c **** 	uint8_t TmpMessageSize=0;
+ 870              		.loc 1 340 2 view .LVU268
+ 871              		.loc 1 340 10 is_stmt 0 view .LVU269
+ 872 005a 0023     		movs	r3, #0
+ 873 005c 8DF80B30 		strb	r3, [sp, #11]
+ 341:../../src/DLTuc.c **** 	uint8_t *TmpMessagePointer = NULL;
+ 874              		.loc 1 341 2 is_stmt 1 view .LVU270
+ 875              		.loc 1 341 11 is_stmt 0 view .LVU271
+ 876 0060 0193     		str	r3, [sp, #4]
+ 342:../../src/DLTuc.c **** 
+ 343:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_START();
+ 877              		.loc 1 343 1 is_stmt 1 view .LVU272
+ 878              	.LBB45:
+ 879              	.LBI45:
+ 140:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 880              		.loc 2 140 27 view .LVU273
+ 881              	.LBB46:
+ 882              		.loc 2 142 3 view .LVU274
+ 883              		.syntax unified
+ 884              	@ 142 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 885 0062 72B6     		cpsid i
+ 886              	@ 0 "" 2
+ 887              		.thumb
+ 888              		.syntax unified
+ 889              	.LBE46:
+ 890              	.LBE45:
+ 344:../../src/DLTuc.c **** 	if(TransmitReadyStateFlag == true)
+ 891              		.loc 1 344 2 view .LVU275
+ 892              		.loc 1 344 28 is_stmt 0 view .LVU276
+ 893 0064 124B     		ldr	r3, .L48+12
+ 894 0066 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 895 0068 DBB2     		uxtb	r3, r3
+ 896              		.loc 1 344 4 view .LVU277
+ 897 006a 012B     		cmp	r3, #1
+ 898 006c 05D0     		beq	.L47
+ 899              	.L45:
+ 345:../../src/DLTuc.c **** 	{
+ 346:../../src/DLTuc.c **** 		if(DLT_RB_Read(&DltRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
+ 347:../../src/DLTuc.c **** 			{
+ 348:../../src/DLTuc.c **** 				TransmitReadyStateFlag = false;
+ 349:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 350:../../src/DLTuc.c **** 				if(ExtSerialTrDataFunctionCb != NULL)
+ 351:../../src/DLTuc.c **** 				{
+ 352:../../src/DLTuc.c **** 					ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 26
+
+
+ 353:../../src/DLTuc.c **** 				}
+ 354:../../src/DLTuc.c **** 				else
+ 355:../../src/DLTuc.c **** 				{
+ 356:../../src/DLTuc.c **** 					// while(1); /*Please Register the callback...*/
+ 357:../../src/DLTuc.c **** 				}
+ 900              		.loc 1 357 5 is_stmt 1 view .LVU278
+ 358:../../src/DLTuc.c **** 			}
+ 359:../../src/DLTuc.c **** 	}
+ 360:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 901              		.loc 1 360 1 view .LVU279
+ 902              	.LBB47:
+ 903              	.LBI47:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 904              		.loc 2 129 27 view .LVU280
+ 905              	.LBB48:
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 906              		.loc 2 131 3 view .LVU281
+ 907              		.syntax unified
+ 908              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 909 006e 62B6     		cpsie i
+ 910              	@ 0 "" 2
+ 911              		.thumb
+ 912              		.syntax unified
+ 913              	.LBE48:
+ 914              	.LBE47:
+ 361:../../src/DLTuc.c **** }
+ 915              		.loc 1 361 1 is_stmt 0 view .LVU282
+ 916 0070 05B0     		add	sp, sp, #20
+ 917              	.LCFI9:
+ 918              		.cfi_remember_state
+ 919              		.cfi_def_cfa_offset 28
+ 920              		@ sp needed
+ 921 0072 BDE8F041 		pop	{r4, r5, r6, r7, r8, lr}
+ 922              	.LCFI10:
+ 923              		.cfi_restore 14
+ 924              		.cfi_restore 8
+ 925              		.cfi_restore 7
+ 926              		.cfi_restore 6
+ 927              		.cfi_restore 5
+ 928              		.cfi_restore 4
+ 929              		.cfi_def_cfa_offset 4
+ 930              	.LVL58:
+ 931              		.loc 1 361 1 view .LVU283
+ 932 0076 01B0     		add	sp, sp, #4
+ 933              	.LCFI11:
+ 934              		.cfi_restore 3
+ 935              		.cfi_def_cfa_offset 0
+ 936 0078 7047     		bx	lr
+ 937              	.LVL59:
+ 938              	.L47:
+ 939              	.LCFI12:
+ 940              		.cfi_restore_state
+ 346:../../src/DLTuc.c **** 			{
+ 941              		.loc 1 346 3 is_stmt 1 view .LVU284
+ 346:../../src/DLTuc.c **** 			{
+ 942              		.loc 1 346 6 is_stmt 0 view .LVU285
+ 943 007a 01AA     		add	r2, sp, #4
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 27
+
+
+ 944 007c 0DF10B01 		add	r1, sp, #11
+ 945 0080 0948     		ldr	r0, .L48+4
+ 946 0082 FFF7FEFF 		bl	DLT_RB_Read
+ 947              	.LVL60:
+ 346:../../src/DLTuc.c **** 			{
+ 948              		.loc 1 346 5 view .LVU286
+ 949 0086 0028     		cmp	r0, #0
+ 950 0088 F1D1     		bne	.L45
+ 348:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 951              		.loc 1 348 5 is_stmt 1 view .LVU287
+ 348:../../src/DLTuc.c **** DLTuc_OS_CRITICAL_END();
+ 952              		.loc 1 348 28 is_stmt 0 view .LVU288
+ 953 008a 094B     		ldr	r3, .L48+12
+ 954 008c 0022     		movs	r2, #0
+ 955 008e 1A70     		strb	r2, [r3]
+ 349:../../src/DLTuc.c **** 				if(ExtSerialTrDataFunctionCb != NULL)
+ 956              		.loc 1 349 1 is_stmt 1 view .LVU289
+ 957              	.LBB49:
+ 958              	.LBI49:
+ 129:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 959              		.loc 2 129 27 view .LVU290
+ 960              	.LBB50:
+ 131:Drivers/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 961              		.loc 2 131 3 view .LVU291
+ 962              		.syntax unified
+ 963              	@ 131 "Drivers/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 964 0090 62B6     		cpsie i
+ 965              	@ 0 "" 2
+ 966              		.thumb
+ 967              		.syntax unified
+ 968              	.LBE50:
+ 969              	.LBE49:
+ 350:../../src/DLTuc.c **** 				{
+ 970              		.loc 1 350 5 view .LVU292
+ 350:../../src/DLTuc.c **** 				{
+ 971              		.loc 1 350 34 is_stmt 0 view .LVU293
+ 972 0092 084B     		ldr	r3, .L48+16
+ 973 0094 1B68     		ldr	r3, [r3]
+ 350:../../src/DLTuc.c **** 				{
+ 974              		.loc 1 350 7 view .LVU294
+ 975 0096 002B     		cmp	r3, #0
+ 976 0098 E9D0     		beq	.L45
+ 352:../../src/DLTuc.c **** 				}
+ 977              		.loc 1 352 6 is_stmt 1 view .LVU295
+ 978 009a 9DF80B10 		ldrb	r1, [sp, #11]	@ zero_extendqisi2
+ 979 009e 0198     		ldr	r0, [sp, #4]
+ 980 00a0 9847     		blx	r3
+ 981              	.LVL61:
+ 982 00a2 E4E7     		b	.L45
+ 983              	.L49:
+ 984              		.align	2
+ 985              	.L48:
+ 986 00a4 00000000 		.word	.LANCHOR2
+ 987 00a8 00000000 		.word	.LANCHOR10
+ 988 00ac 00000000 		.word	.LANCHOR8
+ 989 00b0 00000000 		.word	.LANCHOR11
+ 990 00b4 00000000 		.word	.LANCHOR4
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 28
+
+
+ 991              		.cfi_endproc
+ 992              	.LFE73:
+ 994              		.section	.text.DLTuc_RegisterGetTimeStampMsCallback,"ax",%progbits
+ 995              		.align	1
+ 996              		.global	DLTuc_RegisterGetTimeStampMsCallback
+ 997              		.syntax unified
+ 998              		.thumb
+ 999              		.thumb_func
+ 1001              	DLTuc_RegisterGetTimeStampMsCallback:
+ 1002              	.LVL62:
+ 1003              	.LFB74:
+ 362:../../src/DLTuc.c **** 
+ 363:../../src/DLTuc.c **** /******************************************************************************************/
+ 364:../../src/DLTuc.c **** void DLTuc_RegisterGetTimeStampMsCallback(uint32_t GetSysTime(void))
+ 365:../../src/DLTuc.c **** {
+ 1004              		.loc 1 365 1 view -0
+ 1005              		.cfi_startproc
+ 1006              		@ args = 0, pretend = 0, frame = 0
+ 1007              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1008              		@ link register save eliminated.
+ 366:../../src/DLTuc.c **** 	GetSystemTimeMs = GetSysTime;
+ 1009              		.loc 1 366 2 view .LVU297
+ 1010              		.loc 1 366 18 is_stmt 0 view .LVU298
+ 1011 0000 014B     		ldr	r3, .L51
+ 1012 0002 1860     		str	r0, [r3]
+ 367:../../src/DLTuc.c **** }
+ 1013              		.loc 1 367 1 view .LVU299
+ 1014 0004 7047     		bx	lr
+ 1015              	.L52:
+ 1016 0006 00BF     		.align	2
+ 1017              	.L51:
+ 1018 0008 00000000 		.word	.LANCHOR1
+ 1019              		.cfi_endproc
+ 1020              	.LFE74:
+ 1022              		.section	.bss.ActDltMessageCounter,"aw",%nobits
+ 1023              		.set	.LANCHOR3,. + 0
+ 1026              	ActDltMessageCounter:
+ 1027 0000 00       		.space	1
+ 1028              		.section	.bss.DLtLogDroppedSize,"aw",%nobits
+ 1029              		.set	.LANCHOR7,. + 0
+ 1032              	DLtLogDroppedSize:
+ 1033 0000 00       		.space	1
+ 1034              		.section	.bss.DltDebugTmpBuf,"aw",%nobits
+ 1035              		.align	2
+ 1036              		.set	.LANCHOR2,. + 0
+ 1039              	DltDebugTmpBuf:
+ 1040 0000 00000000 		.space	255
+ 1040      00000000 
+ 1040      00000000 
+ 1040      00000000 
+ 1040      00000000 
+ 1041              		.section	.bss.DltLogDroppedInfoBuffer,"aw",%nobits
+ 1042              		.align	2
+ 1043              		.set	.LANCHOR6,. + 0
+ 1046              	DltLogDroppedInfoBuffer:
+ 1047 0000 00000000 		.space	60
+ 1047      00000000 
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 29
+
+
+ 1047      00000000 
+ 1047      00000000 
+ 1047      00000000 
+ 1048              		.section	.bss.DltMessagesTab,"aw",%nobits
+ 1049              		.align	2
+ 1050              		.set	.LANCHOR0,. + 0
+ 1053              	DltMessagesTab:
+ 1054 0000 00000000 		.space	3825
+ 1054      00000000 
+ 1054      00000000 
+ 1054      00000000 
+ 1054      00000000 
+ 1055              		.section	.bss.DltRingBuffer,"aw",%nobits
+ 1056              		.align	2
+ 1057              		.set	.LANCHOR10,. + 0
+ 1060              	DltRingBuffer:
+ 1061 0000 00000000 		.space	20
+ 1061      00000000 
+ 1061      00000000 
+ 1061      00000000 
+ 1061      00000000 
+ 1062              		.section	.bss.ExtSerialTrDataFunctionCb,"aw",%nobits
+ 1063              		.align	2
+ 1064              		.set	.LANCHOR4,. + 0
+ 1067              	ExtSerialTrDataFunctionCb:
+ 1068 0000 00000000 		.space	4
+ 1069              		.section	.bss.GetSystemTimeMs,"aw",%nobits
+ 1070              		.align	2
+ 1071              		.set	.LANCHOR1,. + 0
+ 1074              	GetSystemTimeMs:
+ 1075 0000 00000000 		.space	4
+ 1076              		.section	.bss.LogDroppedFlag,"aw",%nobits
+ 1077              		.set	.LANCHOR8,. + 0
+ 1080              	LogDroppedFlag:
+ 1081 0000 00       		.space	1
+ 1082              		.section	.bss.PrevLogDropSendTime,"aw",%nobits
+ 1083              		.align	2
+ 1084              		.set	.LANCHOR9,. + 0
+ 1087              	PrevLogDropSendTime:
+ 1088 0000 00000000 		.space	4
+ 1089              		.section	.data.TransmitReadyStateFlag,"aw"
+ 1090              		.set	.LANCHOR11,. + 0
+ 1093              	TransmitReadyStateFlag:
+ 1094 0000 01       		.byte	1
+ 1095              		.section	.rodata.DltLogDroppedInfo,"a"
+ 1096              		.align	2
+ 1097              		.set	.LANCHOR5,. + 0
+ 1100              	DltLogDroppedInfo:
+ 1101 0000 4C4F4720 		.ascii	"LOG DROPPED!!!\000"
+ 1101      44524F50 
+ 1101      50454421 
+ 1101      212100
+ 1102              		.text
+ 1103              	.Letext0:
+ 1104              		.file 3 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\machine\\_
+ 1105              		.file 4 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\sys\\_stdi
+ 1106              		.file 5 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\\10.3.1\\i
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 30
+
+
+ 1107              		.file 6 "../../src/DLTuc.h"
+ 1108              		.file 7 "<built-in>"
+ 1109              		.file 8 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\stdio.h"
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s 			page 31
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 DLTuc.c
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:18     .text.DLT_RB_Read:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:23     .text.DLT_RB_Read:00000000 DLT_RB_Read
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:88     .text.DLT_RB_Read:0000003c $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:94     .text.DLT_RB_Write:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:99     .text.DLT_RB_Write:00000000 DLT_RB_Write
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:239    .text.DLT_RB_Write:00000054 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:245    .text.PrepareHoleHeader:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:250    .text.PrepareHoleHeader:00000000 PrepareHoleHeader
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:444    .text.PrepareHoleHeader:000000c4 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:451    .text.DLTuc_RegisterTransmitSerialDataCallback:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:457    .text.DLTuc_RegisterTransmitSerialDataCallback:00000000 DLTuc_RegisterTransmitSerialDataCallback
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:548    .text.DLTuc_RegisterTransmitSerialDataCallback:00000044 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:558    .text.DLTuc_MessageTransmitDone:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:564    .text.DLTuc_MessageTransmitDone:00000000 DLTuc_MessageTransmitDone
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:727    .text.DLTuc_MessageTransmitDone:00000078 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:739    .text.DLTuc_LogOutVarArgs:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:745    .text.DLTuc_LogOutVarArgs:00000000 DLTuc_LogOutVarArgs
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:986    .text.DLTuc_LogOutVarArgs:000000a4 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:995    .text.DLTuc_RegisterGetTimeStampMsCallback:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1001   .text.DLTuc_RegisterGetTimeStampMsCallback:00000000 DLTuc_RegisterGetTimeStampMsCallback
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1018   .text.DLTuc_RegisterGetTimeStampMsCallback:00000008 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1026   .bss.ActDltMessageCounter:00000000 ActDltMessageCounter
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1027   .bss.ActDltMessageCounter:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1032   .bss.DLtLogDroppedSize:00000000 DLtLogDroppedSize
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1033   .bss.DLtLogDroppedSize:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1035   .bss.DltDebugTmpBuf:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1039   .bss.DltDebugTmpBuf:00000000 DltDebugTmpBuf
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1042   .bss.DltLogDroppedInfoBuffer:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1046   .bss.DltLogDroppedInfoBuffer:00000000 DltLogDroppedInfoBuffer
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1049   .bss.DltMessagesTab:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1053   .bss.DltMessagesTab:00000000 DltMessagesTab
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1056   .bss.DltRingBuffer:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1060   .bss.DltRingBuffer:00000000 DltRingBuffer
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1063   .bss.ExtSerialTrDataFunctionCb:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1067   .bss.ExtSerialTrDataFunctionCb:00000000 ExtSerialTrDataFunctionCb
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1070   .bss.GetSystemTimeMs:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1074   .bss.GetSystemTimeMs:00000000 GetSystemTimeMs
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1080   .bss.LogDroppedFlag:00000000 LogDroppedFlag
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1081   .bss.LogDroppedFlag:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1083   .bss.PrevLogDropSendTime:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1087   .bss.PrevLogDropSendTime:00000000 PrevLogDropSendTime
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1093   .data.TransmitReadyStateFlag:00000000 TransmitReadyStateFlag
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1096   .rodata.DltLogDroppedInfo:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\ccu6rRld.s:1100   .rodata.DltLogDroppedInfo:00000000 DltLogDroppedInfo
+
+UNDEFINED SYMBOLS
+vsprintf

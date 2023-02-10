@@ -1,0 +1,123 @@
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"Contex3.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.rodata.TaskContex3.str1.4,"aMS",%progbits,1
+  18              		.align	2
+  19              	.LC0:
+  20 0000 436F6E74 		.ascii	"Contex3 Start! \000"
+  20      65783320 
+  20      53746172 
+  20      74212000 
+  21              		.align	2
+  22              	.LC1:
+  23 0010 48656C6C 		.ascii	"Hello Message From Contex3\000"
+  23      6F204D65 
+  23      73736167 
+  23      65204672 
+  23      6F6D2043 
+  24              		.section	.text.TaskContex3,"ax",%progbits
+  25              		.align	1
+  26              		.global	TaskContex3
+  27              		.syntax unified
+  28              		.thumb
+  29              		.thumb_func
+  31              	TaskContex3:
+  32              	.LFB65:
+  33              		.file 1 "Contex3.c"
+   1:Contex3.c     **** #define DLT_LOG_CONTEX           "CTX3"
+   2:Contex3.c     **** #define DLT_LOG_APPID            "NUM3"
+   3:Contex3.c     **** 
+   4:Contex3.c     **** 
+   5:Contex3.c     **** #include "DLTuc.h"
+   6:Contex3.c     **** #include "nnRTOS.h"
+   7:Contex3.c     **** 
+   8:Contex3.c     **** void TaskContex3(void)
+   9:Contex3.c     **** {
+  34              		.loc 1 9 1 view -0
+  35              		.cfi_startproc
+  36              		@ Volatile: function does not return.
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  39 0000 08B5     		push	{r3, lr}
+  40              	.LCFI0:
+  41              		.cfi_def_cfa_offset 8
+  42              		.cfi_offset 3, -8
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s 			page 2
+
+
+  43              		.cfi_offset 14, -4
+  10:Contex3.c     ****     LOG("Contex3 Start! ")
+  44              		.loc 1 10 5 view .LVU1
+  45              		.loc 1 10 5 view .LVU2
+  46 0002 084B     		ldr	r3, .L4
+  47 0004 084A     		ldr	r2, .L4+4
+  48 0006 0949     		ldr	r1, .L4+8
+  49 0008 0420     		movs	r0, #4
+  50 000a FFF7FEFF 		bl	DLTuc_LogOutVarArgs
+  51              	.LVL0:
+  52              	.L2:
+  11:Contex3.c     **** 
+  12:Contex3.c     ****     while(1)
+  53              		.loc 1 12 5 discriminator 1 view .LVU3
+  13:Contex3.c     ****     {
+  14:Contex3.c     ****     LOG("Hello Message From Contex3")
+  54              		.loc 1 14 5 discriminator 1 view .LVU4
+  55              		.loc 1 14 5 discriminator 1 view .LVU5
+  56 000e 084B     		ldr	r3, .L4+12
+  57 0010 054A     		ldr	r2, .L4+4
+  58 0012 0649     		ldr	r1, .L4+8
+  59 0014 0420     		movs	r0, #4
+  60 0016 FFF7FEFF 		bl	DLTuc_LogOutVarArgs
+  61              	.LVL1:
+  15:Contex3.c     ****     nnOsThreadSleep(4);
+  62              		.loc 1 15 5 discriminator 1 view .LVU6
+  63 001a 0420     		movs	r0, #4
+  64 001c FFF7FEFF 		bl	nnOsThreadSleep
+  65              	.LVL2:
+  12:Contex3.c     ****     {
+  66              		.loc 1 12 10 discriminator 1 view .LVU7
+  67 0020 F5E7     		b	.L2
+  68              	.L5:
+  69 0022 00BF     		.align	2
+  70              	.L4:
+  71 0024 00000000 		.word	.LC0
+  72 0028 33585443 		.word	1129601075
+  73 002c 334D554E 		.word	1314213171
+  74 0030 10000000 		.word	.LC1
+  75              		.cfi_endproc
+  76              	.LFE65:
+  78              		.text
+  79              	.Letext0:
+  80              		.file 2 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\machine\\_
+  81              		.file 3 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\sys\\_stdi
+  82              		.file 4 "../../src/DLTuc.h"
+  83              		.file 5 "nnRtos/inc/nnRTOS.h"
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Contex3.c
+C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s:18     .rodata.TaskContex3.str1.4:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s:25     .text.TaskContex3:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s:31     .text.TaskContex3:00000000 TaskContex3
+C:\Users\Teodor\AppData\Local\Temp\cch83SkH.s:71     .text.TaskContex3:00000024 $d
+
+UNDEFINED SYMBOLS
+DLTuc_LogOutVarArgs
+nnOsThreadSleep

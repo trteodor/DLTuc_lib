@@ -1,0 +1,198 @@
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"Contex1.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.rodata.TaskContex1.str1.4,"aMS",%progbits,1
+  18              		.align	2
+  19              	.LC0:
+  20 0000 436F6E74 		.ascii	"Contex1 Start! \000"
+  20      65783120 
+  20      53746172 
+  20      74212000 
+  21              		.align	2
+  22              	.LC1:
+  23 0010 48656C6C 		.ascii	"Hello Crazy World\000"
+  23      6F204372 
+  23      617A7920 
+  23      576F726C 
+  23      6400
+  24 0022 0000     		.align	2
+  25              	.LC2:
+  26 0024 46494C45 		.ascii	"FILE:%s() FUN:%s() LOG: I belive you care about you"
+  26      3A257328 
+  26      29204655 
+  26      4E3A2573 
+  26      2829204C 
+  27 0057 7273656C 		.ascii	"rself :) \000"
+  27      66203A29 
+  27      2000
+  28 0061 000000   		.align	2
+  29              	.LC3:
+  30 0064 436F6E74 		.ascii	"Contex1.c\000"
+  30      6578312E 
+  30      6300
+  31 006e 0000     		.align	2
+  32              	.LC4:
+  33 0070 46494C45 		.ascii	"FILE:%s() FUN:%s() LOG: I dk What we log here more\000"
+  33      3A257328 
+  33      29204655 
+  33      4E3A2573 
+  33      2829204C 
+  34              		.section	.text.TaskContex1,"ax",%progbits
+  35              		.align	1
+  36              		.global	TaskContex1
+  37              		.syntax unified
+  38              		.thumb
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s 			page 2
+
+
+  39              		.thumb_func
+  41              	TaskContex1:
+  42              	.LFB65:
+  43              		.file 1 "Contex1.c"
+   1:Contex1.c     **** 
+   2:Contex1.c     **** 
+   3:Contex1.c     **** #define DLT_LOG_CONTEX           "CTX1"
+   4:Contex1.c     **** #define DLT_LOG_APPID            "NUM1"
+   5:Contex1.c     **** #define DLT_LOG_ENABLE_LEVEL     DL_INFO
+   6:Contex1.c     **** 
+   7:Contex1.c     **** #include "DLTuc.h"
+   8:Contex1.c     **** #include "nnRTOS.h"
+   9:Contex1.c     **** 
+  10:Contex1.c     **** void TaskContex1(void)
+  11:Contex1.c     **** {
+  44              		.loc 1 11 1 view -0
+  45              		.cfi_startproc
+  46              		@ Volatile: function does not return.
+  47              		@ args = 0, pretend = 0, frame = 0
+  48              		@ frame_needed = 0, uses_anonymous_args = 0
+  49 0000 80B5     		push	{r7, lr}
+  50              	.LCFI0:
+  51              		.cfi_def_cfa_offset 8
+  52              		.cfi_offset 7, -8
+  53              		.cfi_offset 14, -4
+  54 0002 82B0     		sub	sp, sp, #8
+  55              	.LCFI1:
+  56              		.cfi_def_cfa_offset 16
+  12:Contex1.c     ****     LOG("Contex1 Start! ")
+  57              		.loc 1 12 5 view .LVU1
+  58              		.loc 1 12 5 view .LVU2
+  59 0004 124B     		ldr	r3, .L4
+  60 0006 134A     		ldr	r2, .L4+4
+  61 0008 1349     		ldr	r1, .L4+8
+  62 000a 0420     		movs	r0, #4
+  63 000c FFF7FEFF 		bl	DLTuc_LogOutVarArgs
+  64              	.LVL0:
+  65              	.L2:
+  13:Contex1.c     **** 
+  14:Contex1.c     **** 
+  15:Contex1.c     ****     while(1)
+  66              		.loc 1 15 5 discriminator 1 view .LVU3
+  16:Contex1.c     ****     {
+  17:Contex1.c     ****     LOG("Hello Crazy World")
+  67              		.loc 1 17 5 discriminator 1 view .LVU4
+  68              		.loc 1 17 5 discriminator 1 view .LVU5
+  69 0010 104D     		ldr	r5, .L4+4
+  70 0012 114C     		ldr	r4, .L4+8
+  71 0014 114B     		ldr	r3, .L4+12
+  72 0016 2A46     		mov	r2, r5
+  73 0018 2146     		mov	r1, r4
+  74 001a 0420     		movs	r0, #4
+  75 001c FFF7FEFF 		bl	DLTuc_LogOutVarArgs
+  76              	.LVL1:
+  18:Contex1.c     ****     LOGFF(DL_DEBUG,"Missed log! Check definition on top of the file: DLT_LOG_ENABLE_LEVEL")
+  77              		.loc 1 18 5 discriminator 1 view .LVU6
+  19:Contex1.c     ****     LOGFF(DL_FATAL,"I belive you care about yourself :) ")
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s 			page 3
+
+
+  78              		.loc 1 19 5 discriminator 1 view .LVU7
+  79              		.loc 1 19 5 discriminator 1 view .LVU8
+  80 0020 0F4F     		ldr	r7, .L4+16
+  81 0022 0197     		str	r7, [sp, #4]
+  82 0024 0F4E     		ldr	r6, .L4+20
+  83 0026 0096     		str	r6, [sp]
+  84 0028 0F4B     		ldr	r3, .L4+24
+  85 002a 2A46     		mov	r2, r5
+  86 002c 2146     		mov	r1, r4
+  87 002e 0120     		movs	r0, #1
+  88 0030 FFF7FEFF 		bl	DLTuc_LogOutVarArgs
+  89              	.LVL2:
+  20:Contex1.c     ****     LOGFF(DL_FATAL,"I dk What we log here more")
+  90              		.loc 1 20 5 discriminator 1 view .LVU9
+  91              		.loc 1 20 5 discriminator 1 view .LVU10
+  92 0034 0197     		str	r7, [sp, #4]
+  93 0036 0096     		str	r6, [sp]
+  94 0038 0C4B     		ldr	r3, .L4+28
+  95 003a 2A46     		mov	r2, r5
+  96 003c 2146     		mov	r1, r4
+  97 003e 0120     		movs	r0, #1
+  98 0040 FFF7FEFF 		bl	DLTuc_LogOutVarArgs
+  99              	.LVL3:
+  21:Contex1.c     ****     nnOsThreadSleep(3000);
+ 100              		.loc 1 21 5 discriminator 1 view .LVU11
+ 101 0044 40F6B830 		movw	r0, #3000
+ 102 0048 FFF7FEFF 		bl	nnOsThreadSleep
+ 103              	.LVL4:
+  15:Contex1.c     ****     {
+ 104              		.loc 1 15 10 discriminator 1 view .LVU12
+ 105 004c E0E7     		b	.L2
+ 106              	.L5:
+ 107 004e 00BF     		.align	2
+ 108              	.L4:
+ 109 0050 00000000 		.word	.LC0
+ 110 0054 31585443 		.word	1129601073
+ 111 0058 314D554E 		.word	1314213169
+ 112 005c 10000000 		.word	.LC1
+ 113 0060 00000000 		.word	.LANCHOR0
+ 114 0064 64000000 		.word	.LC3
+ 115 0068 24000000 		.word	.LC2
+ 116 006c 70000000 		.word	.LC4
+ 117              		.cfi_endproc
+ 118              	.LFE65:
+ 120              		.section	.rodata.__FUNCTION__.0,"a"
+ 121              		.align	2
+ 122              		.set	.LANCHOR0,. + 0
+ 125              	__FUNCTION__.0:
+ 126 0000 5461736B 		.ascii	"TaskContex1\000"
+ 126      436F6E74 
+ 126      65783100 
+ 127              		.text
+ 128              	.Letext0:
+ 129              		.file 2 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\machine\\_
+ 130              		.file 3 "d:\\gnu_tools\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\sys\\_stdi
+ 131              		.file 4 "../../src/DLTuc.h"
+ 132              		.file 5 "nnRtos/inc/nnRTOS.h"
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s 			page 4
+
+
+ARM GAS  C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Contex1.c
+C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s:18     .rodata.TaskContex1.str1.4:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s:35     .text.TaskContex1:00000000 $t
+C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s:41     .text.TaskContex1:00000000 TaskContex1
+C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s:109    .text.TaskContex1:00000050 $d
+C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s:121    .rodata.__FUNCTION__.0:00000000 $d
+C:\Users\Teodor\AppData\Local\Temp\cconmW1X.s:125    .rodata.__FUNCTION__.0:00000000 __FUNCTION__.0
+
+UNDEFINED SYMBOLS
+DLTuc_LogOutVarArgs
+nnOsThreadSleep

@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "gpio_fun.h": "c",
+        "usart_uart_dma.h": "c",
+        "stm32f103xb.h": "c",
+        "core_cm3.h": "c",
+        "system_stm32f1xx.h": "c",
+        "rcc_config.h": "c",
+        "printtobuf.h": "c",
+        "stdio.h": "c",
+        "sstream": "c",
+        "main.h": "c",
+        "config.h": "c",
+        "contable.h": "c",
+        "stm32f1xx.h": "c",
+        "dltuc.h": "c",
+        "nnrtos.h": "c",
+        "cmsis_os.h": "c",
+        "cmsis_os2.h": "c",
+        "stddef.h": "c"
+    }
+}
