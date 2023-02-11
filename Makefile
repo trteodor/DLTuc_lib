@@ -7,7 +7,7 @@ startMessage:
 infoMessage:
 	@echo --------------------------------
 	@echo --------------------------------
-	@echo possible another examples: simple \ demo_rtos \ perf_test
+	@echo possible another examples: simple \ demo_rtos \ performance_test
 	@echo check directory: examples
 	@echo to compile and program/flash board using another than default example just call:
 	@echo make demo_rtos

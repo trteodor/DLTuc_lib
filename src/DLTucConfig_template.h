@@ -16,6 +16,7 @@
 #if 0 /*Set it to "1" to enable content*/
 
 #ifndef __DLT_CONFIG__
+#define __DLT_CONFIG__
 
 /*Comment this line to turn off all logs..*/
 #define LOGS_ENABLE 
