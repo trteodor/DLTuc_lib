@@ -10,7 +10,7 @@
  * Requirments:
  * Around ~2kB of RAM
  * Check Configuration file and defines:
- * DLT_RING_BUFFER_SIZE, DLT_MAX_SINGLE_MESSAGE_SIZE
+ * DLT_TRANSMIT_RING_BUFFER_SIZE, DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE
  *
  */
 
@@ -46,6 +46,34 @@
 				  ((uint32_t)((uint8_t)DLT_LOG_CONTEX[3]))))
 
 
+
+
+/*
+ * Definitions of DLT services.
+ */
+#define DLT_SERVICE_ID_SET_LOG_LEVEL                   0x01 /**< Service ID: Set log level */
+#define DLT_SERVICE_ID_SETRACE_STATUS                0x02 /**< Service ID: Set trace status */
+#define DLT_SERVICE_ID_GET_LOG_INFO                    0x03 /**< Service ID: Get log info */
+#define DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL           0x04 /**< Service ID: Get dafault log level */
+#define DLT_SERVICE_ID_STORE_CONFIG                    0x05 /**< Service ID: Store configuration */
+#define DLT_SERVICE_ID_RESETO_FACTORY_DEFAULT        0x06 /**< Service ID: Reset to factory defaults */
+#define DLT_SERVICE_ID_SET_COM_INTERFACE_STATUS        0x07 /**< Service ID: Set communication interface status */
+#define DLT_SERVICE_ID_SET_COM_INTERFACE_MAX_BANDWIDTH 0x08 /**< Service ID: Set communication interface maximum bandwidth */
+#define DLT_SERVICE_ID_SET_VERBOSE_MODE                0x09 /**< Service ID: Set verbose mode */
+#define DLT_SERVICE_ID_SET_MESSAGE_FILTERING           0x0A /**< Service ID: Set message filtering */
+#define DLT_SERVICE_ID_SETIMING_PACKETS              0x0B /**< Service ID: Set timing packets */
+#define DLT_SERVICE_ID_GET_LOCALIME                  0x0C /**< Service ID: Get local time */
+#define DLT_SERVICE_ID_USE_ECU_ID                      0x0D /**< Service ID: Use ECU id */
+#define DLT_SERVICE_ID_USE_SESSION_ID                  0x0E /**< Service ID: Use session id */
+#define DLT_SERVICE_ID_USEIMESTAMP                   0x0F /**< Service ID: Use timestamp */
+#define DLT_SERVICE_ID_USE_EXTENDED_HEADER             0x10 /**< Service ID: Use extended header */
+#define DLT_SERVICE_ID_SET_DEFAULT_LOG_LEVEL           0x11 /**< Service ID: Set default log level */
+#define DLT_SERVICE_ID_SET_DEFAULTRACE_STATUS        0x12 /**< Service ID: Set default trace status */
+#define DLT_SERVICE_ID_GET_SOFTWARE_VERSION            0x13 /**< Service ID: Get software version */
+#define DLT_SERVICE_ID_MESSAGE_BUFFER_OVERFLOW         0x14 /**< Service ID: Message buffer overflow */
+#define DLT_SERVICE_ID_CALLSW_CINJECTION              0xFFF /**< Service ID: Message Injection (minimal ID) */
+
+
 /**!
  * \brief DltLogLevel_t 
  * \details Typdef used to identify the DLT log level
@@ -61,16 +89,24 @@ typedef enum
 }DltLogLevel_t;
 
 
+void DLTuc_RawDataReceiveDone(uint16_t Size);
+
+void DLTuc_RegisterReceiveSerialDataFunction(void LLSerialRecDataFunctionC(uint8_t *DltLogData, uint16_t Size));
+
+void DLTuc_RegisterInjectionDataReceivedCb
+		(void InjectionDataRcvd(uint32_t AppId, uint32_t ConId,uint32_t ServId,uint8_t *Data, uint16_t Size));
+
+
 
 /*!
  ************************************************************************************************
- * \brief DLTuc_RegisterTransmitSerialDataCallback
- * \details This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataCallback"
+ * \brief DLTuc_RegisterTransmitSerialDataFunction
+ * \details This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataFunction"
  *          As a parameter must be pass function which will transmit serial data
  * \param in LLSerialTrDataFunctionC transmit function pointer
  
  ************************************************************************************************/
-void DLTuc_RegisterTransmitSerialDataCallback(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size));
+void DLTuc_RegisterTransmitSerialDataFunction(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size));
 
 /*!
  ************************************************************************************************

@@ -18,6 +18,7 @@
         "cmsis_os.h": "c",
         "cmsis_os2.h": "c",
         "stddef.h": "c",
-        "dltucconfig.h": "c"
+        "dltucconfig.h": "c",
+        "string.h": "c"
     }
 }

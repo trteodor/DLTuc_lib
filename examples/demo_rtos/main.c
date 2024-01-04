@@ -18,7 +18,7 @@ void UART2_TransmitDMAEndCallBack()
 }
 
 
-/*This CallBack was registered in main function using function: DLTuc_RegisterTransmitSerialDataCallback*/
+/*This CallBack was registered in main function using function: DLTuc_RegisterTransmitSerialDataFunction*/
 void UART2_LowLevelDataTransmit(uint8_t *DltLogData, uint8_t Size)
 {
 	/*This function is called by ucDLTlib when is something to send*/
@@ -55,14 +55,14 @@ int main(void)
 
 	GPIO_Pin_Cfg(GPIOA,Px5,gpio_mode_output_PP_2MHz);
 	GPIO_PinSet(GPIOA, Psm5); /*Led is very exicited! :) */
-	Uart2HandlerPointer = UART2_Init115200(UART2_TransmitDMAEndCallBack);
+	Uart2HandlerPointer = UART2_Init115200(UART2_TransmitDMAEndCallBack,NULL);
 	/*Init UART with baud 115200 and pass pointer called after transmission end (transmit complet DMA)*/
 	/*Microcontoler Initialization end...*/
 	/**********************************************************/
 
 
 	/*Register Low Level Transmit function for DLTuc Library*/
-	DLTuc_RegisterTransmitSerialDataCallback(UART2_LowLevelDataTransmit);
+	DLTuc_RegisterTransmitSerialDataFunction(UART2_LowLevelDataTransmit);
 	DLTuc_RegisterGetTimeStampMsCallback(nnOs_GetSystemTime); 	/*Register GetSysTime function*/
 	/*The function "GetSysTime" must return the time in ms*/
 

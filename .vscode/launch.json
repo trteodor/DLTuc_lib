@@ -7,7 +7,7 @@
         {
             "name": "Cortex Debug",
             "cwd": "${workspaceRoot}",
-            "executable": "./examples/demo/build/STM32F1_DLTuc_Simple.elf",
+            "executable": "examples/simple/build/STM32F1_DLTuc_Simple.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",

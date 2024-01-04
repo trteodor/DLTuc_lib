@@ -49,10 +49,10 @@
         <interface>2</interface>
         <hostname>localhost</hostname>
         <mcinterface></mcinterface>
-        <mcIP>&lt;None&gt;</mcIP>
+        <mcIP></mcIP>
         <ipport>3490</ipport>
         <udpport>3490</udpport>
-        <port>COM9</port>
+        <port>COM5</port>
         <baudrate>115200</baudrate>
         <sendserialheadertcp>0</sendserialheadertcp>
         <sendserialheaderserial>1</sendserialheaderserial>

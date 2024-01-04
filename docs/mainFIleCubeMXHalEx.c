@@ -103,7 +103,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  DLTuc_RegisterTransmitSerialDataCallback(LLSerialTrDataFunctionC);
+  DLTuc_RegisterTransmitSerialDataFunction(LLSerialTrDataFunctionC);
   DLTuc_RegisterGetTimeStampMsCallback(HAL_GetTick);
   /* USER CODE END 2 */
 	for(int i=0; i<50; i++)

@@ -36,11 +36,11 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES += main.c
-C_SOURCES += Drivers/GPIO_f1/GPIO_fun.c 
-C_SOURCES += Drivers/uart_dma/USART_UART_DMA.c 
-C_SOURCES += Drivers/System/SystemConfig.c 
-C_SOURCES += Drivers/System/RCC_Config.c 
-C_SOURCES += Drivers/RTC/RTC.c 
+C_SOURCES += ../Drivers/GPIO_f1/GPIO_fun.c 
+C_SOURCES += ../Drivers/uart_dma/USART_UART_DMA.c 
+C_SOURCES += ../Drivers/System/SystemConfig.c 
+C_SOURCES += ../Drivers/System/RCC_Config.c 
+C_SOURCES += ../Drivers/RTC/RTC.c 
 #Add DltLibFiles
 C_SOURCES +=  ../../src/DLTuc.c
 
@@ -97,13 +97,13 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES += -I../simple/
-C_INCLUDES += -IDrivers/CMSIS/Core/Include
-C_INCLUDES += -IDrivers/CMSIS/Include
-C_INCLUDES += -IDrivers/CMSIS/Device/ST/STM32F1xx/Include
-C_INCLUDES += -IDrivers/System
-C_INCLUDES += -IDrivers/RTC
-C_INCLUDES += -IDrivers/uart_dma
-C_INCLUDES += -IDrivers/GPIO_f1
+C_INCLUDES += -I../Drivers/CMSIS/Core/Include
+C_INCLUDES += -I../Drivers/CMSIS/Include
+C_INCLUDES += -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include
+C_INCLUDES += -I../Drivers/System
+C_INCLUDES += -I../Drivers/RTC
+C_INCLUDES += -I../Drivers/uart_dma
+C_INCLUDES += -I../Drivers/GPIO_f1
 #Add DltLibFiles
 C_INCLUDES += -I../../src
 

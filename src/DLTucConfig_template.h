@@ -9,7 +9,7 @@
  * DLTuc Requirments:
  * Around ~2kB of RAM
  * Check Configuration file and defines:
- * DLT_RING_BUFFER_SIZE, DLT_MAX_SINGLE_MESSAGE_SIZE
+ * DLT_TRANSMIT_RING_BUFFER_SIZE, DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE
  *
  */
 
@@ -59,12 +59,15 @@
 
 
 /*
-*@brief DLT_MAX_SINGLE_MESSAGE_SIZE & DLT_RING_BUFFER_SIZE
+*@brief DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE & DLT_TRANSMIT_RING_BUFFER_SIZE
 * these values define the size of the circular buffer and the maximum size of a single DLT message
-* Size of out Circular DLT messages buffer is equal: DLT_MAX_SINGLE_MESSAGE_SIZE*DLT_RING_BUFFER_SIZE bytes
+* Size of out Circular DLT messages buffer is equal: DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE*DLT_TRANSMIT_RING_BUFFER_SIZE bytes
 */
-#define DLT_MAX_SINGLE_MESSAGE_SIZE 255 
-#define DLT_RING_BUFFER_SIZE 15
+#define DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE 255
+#define DLT_TRANSMIT_RING_BUFFER_SIZE 15
+
+#define DLT_REC_SINGLE_MESSAGE_MAX_SIZE      255
+#define DLT_RECEIVE_RING_BUFFER_SIZE     2
 
 #endif  //__DLT_CONFIG__
 

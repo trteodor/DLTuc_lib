@@ -39,25 +39,25 @@ C_SOURCES += main.c
 C_SOURCES += Contex1.c
 C_SOURCES += Contex2.c
 C_SOURCES += Contex3.c
-C_SOURCES += Drivers/GPIO_f1/GPIO_fun.c 
-C_SOURCES += Drivers/uart_dma/USART_UART_DMA.c 
-C_SOURCES += Drivers/System/RCC_Config.c 
-C_SOURCES += Drivers/RTC/RTC.c 
+C_SOURCES += ../Drivers/GPIO_f1/GPIO_fun.c 
+C_SOURCES += ../Drivers/uart_dma/USART_UART_DMA.c 
+C_SOURCES += ../Drivers/System/RCC_Config.c 
+C_SOURCES += ../Drivers/RTC/RTC.c 
 #Add DltLibFiles
 C_SOURCES +=  ../../src/DLTuc.c
 
 #nnRTOS sources
-C_SOURCES += nnRtos/src/nnKernel.c
-C_SOURCES += nnRtos/port/CM3F/port.c
-C_SOURCES += nnRtos/src/semaphores.c
-C_SOURCES += nnRtos/src/queues.c
+C_SOURCES += ../nnRtos/src/nnKernel.c
+C_SOURCES += ../nnRtos/port/CM3F/port.c
+C_SOURCES += ../nnRtos/src/semaphores.c
+C_SOURCES += ../nnRtos/src/queues.c
 #nnRTOS asm file
 
 
 
 # ASM sources
 ASM_SOURCES += startup_stm32f103xb.s
-ASM_SOURCES += nnRtos/port/CM3F/portAsm.s
+ASM_SOURCES += ../nnRtos/port/CM3F/portAsm.s
 #######################################
 # binaries
 #######################################
@@ -107,20 +107,20 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES += -I../performanceTestRtos/
-C_INCLUDES += -IDrivers/CMSIS/Core/Include
-C_INCLUDES += -IDrivers/CMSIS/Include
-C_INCLUDES += -IDrivers/CMSIS/Device/ST/STM32F1xx/Include
-C_INCLUDES += -IDrivers/System
-C_INCLUDES += -IDrivers/RTC
-C_INCLUDES += -IDrivers/uart_dma
-C_INCLUDES += -IDrivers/GPIO_f1
+C_INCLUDES += -I../Drivers/CMSIS/Core/Include
+C_INCLUDES += -I../Drivers/CMSIS/Include
+C_INCLUDES += -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include
+C_INCLUDES += -I../Drivers/System
+C_INCLUDES += -I../Drivers/RTC
+C_INCLUDES += -I../Drivers/uart_dma
+C_INCLUDES += -I../Drivers/GPIO_f1
 #Add DltLibFiles
 C_INCLUDES += -I../../src
 
-C_INCLUDES += -InnRtos
-C_INCLUDES += -InnRtos/inc
-C_INCLUDES += -InnRtos/port/CM3F
-C_INCLUDES += -Icommon/Inc
+C_INCLUDES += -I../nnRtos
+C_INCLUDES += -I../nnRtos/inc
+C_INCLUDES += -I../nnRtos/port/CM3F
+C_INCLUDES += -I../common/Inc
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
