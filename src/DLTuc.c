@@ -397,6 +397,12 @@ void DLTuc_RawDataReceiveDone(uint16_t Size)
 	uint8_t *MessageToRead_p = NULL;
 	uint8_t MessageToReadSize= 0U;
 
+	/*
+	* The receive buffer isn't handled fully correctly, it require deeper investigation
+	* However, it is possible to receive the Injection messages, and base commands if are transmitted with breakes..
+	* Received DTL messages are divided by the "IDLE" irq for now.., not by the size and etc...
+	*
+	*/
 	if(DLT_RB_Receive_Read(&BleMainReceiveRingBuffer, &MessageToReadSize,&MessageToRead_p) == RB_OK)
 	{
 		if(MessageToRead_p[4] == 53)
@@ -414,16 +420,37 @@ void DLTuc_RawDataReceiveDone(uint16_t Size)
 			uint32_t RecContexId =   MessageToRead_p[25] << 24 |MessageToRead_p[24] << 16 | MessageToRead_p[23] << 8 | MessageToRead_p[22] << 0;
 			uint32_t RecServiceId =  MessageToRead_p[29] << 24 |MessageToRead_p[28] << 16 | MessageToRead_p[27] << 8 | MessageToRead_p[26] << 0;
 
-			/*MSB LSB, wtf..?, it is somehow mixed? */
-			uint32_t DltDatSize =  MessageToRead_p[33] << 24 | MessageToRead_p[32] << 16 | MessageToRead_p[31] << 8 | MessageToRead_p[30] << 0;
-
-
 			if(RecServiceId >= DLT_SERVICE_ID_CALLSW_CINJECTION)
 			{
 				if(NULL != ExtInfoInjectionDataRcvdCb)
 				{
+					/*MSB LSB, wtf..?, it is somehow mixed? */
+					uint32_t DltDatSize =  MessageToRead_p[33] << 24 | MessageToRead_p[32] << 16 | MessageToRead_p[31] << 8 | MessageToRead_p[30] << 0;
+
 					ExtInfoInjectionDataRcvdCb(AppId,RecContexId,RecServiceId,&MessageToRead_p[34],(uint16_t)DltDatSize);
 				}
+			}
+			else if(RecServiceId == DLT_SERVICE_ID_SET_LOG_LEVEL)
+			{
+				uint32_t NewLogLevel =  MessageToRead_p[30];
+				LOG("Set new log level request: %d How you triggered it?? , not supported", NewLogLevel);
+				/* It is handled correctly by DLT Viewer?? */
+			}
+			else if(RecServiceId == DLT_SERVICE_ID_SET_DEFAULT_LOG_LEVEL)
+			{
+				uint32_t NewLogLevel =  MessageToRead_p[30];
+				LOG("Set default log level request: %d", NewLogLevel);
+
+				LOG("Not supported yet, I'm too lazy :)");
+			}
+			else if(DLT_SERVICE_ID_GET_SOFTWARE_VERSION == RecServiceId)
+			{
+				LOG("ECU_SW_VERSION: %d", DLT_ECU_SW_VER);
+				/*TODO: The lib should send here answer of control message... */
+			}
+			else if(DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL == RecServiceId)
+			{
+				LOG("Default log level: %d", DLT_LOG_ENABLE_LEVEL);
 			}
 		}
 	}
@@ -439,7 +466,10 @@ void DLTuc_RegisterReceiveSerialDataFunction(void LLSerialRecDataFunctionC(uint8
 {
 	ExtSerialRecDataFunctionCb = LLSerialRecDataFunctionC;
 
-	ExtSerialRecDataFunctionCb(&BluMainReceiveMessagesTab[0][0],DLT_REC_SINGLE_MESSAGE_MAX_SIZE);
+	if(ExtSerialRecDataFunctionCb != NULL)
+	{
+		ExtSerialRecDataFunctionCb(&BluMainReceiveMessagesTab[0][0],DLT_REC_SINGLE_MESSAGE_MAX_SIZE);
+	}
 }
 
 

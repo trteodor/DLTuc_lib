@@ -45,7 +45,7 @@
 
 #define DLT_LOG_ECUID           "STF1" /*Electronic Controller Unit ID*/
 
-
+#define DLT_ECU_SW_VER          0001
 
 
 /*

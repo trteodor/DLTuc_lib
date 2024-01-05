@@ -46,7 +46,7 @@
 #define DLT_LOG_ECUID           "STF1" /*Electronic Controller Unit ID*/
 
 
-
+#define DLT_ECU_SW_VER          0001
 
 /*
 *@brief DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE & DLT_TRANSMIT_RING_BUFFER_SIZE

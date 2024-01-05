@@ -88,23 +88,40 @@ typedef enum
 	DL_VERBOSE =6,
 }DltLogLevel_t;
 
-
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_RawDataReceiveDone
+ * \details OPTIONAL - Use only if you need handle data receive, like Injection messages
+ * Call the function to inform DLTuc that Raw data packet has been received
+ ************************************************************************************************/
 void DLTuc_RawDataReceiveDone(uint16_t Size);
 
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_RegisterReceiveSerialDataFunction
+ * \details OPTIONAL - Use only if you need handle data receive, like Injection messages
+ * - Register callback function which will be used by DLTuc to start data receive process.
+ * The Callback function is basicly called only after registration and if data packet has been received,
+ * to start again receive data packet
+ ************************************************************************************************/
 void DLTuc_RegisterReceiveSerialDataFunction(void LLSerialRecDataFunctionC(uint8_t *DltLogData, uint16_t Size));
 
+/*!
+ ************************************************************************************************
+ * \brief DLTuc_RegisterInjectionDataReceivedCb
+ * \details OPTIONAL - Use only if you need handle data receive, like Injection messages
+ * Register injection data received call back
+ * Use the function if you want register call back function to handle the Injection messages in your application
+ ************************************************************************************************/
 void DLTuc_RegisterInjectionDataReceivedCb
 		(void InjectionDataRcvd(uint32_t AppId, uint32_t ConId,uint32_t ServId,uint8_t *Data, uint16_t Size));
-
-
 
 /*!
  ************************************************************************************************
  * \brief DLTuc_RegisterTransmitSerialDataFunction
  * \details This simple stack/library must be initialized by "DLTuc_RegisterTransmitSerialDataFunction"
- *          As a parameter must be pass function which will transmit serial data
+ *          As a parameter must be passed function which will transmit serial data
  * \param in LLSerialTrDataFunctionC transmit function pointer
- 
  ************************************************************************************************/
 void DLTuc_RegisterTransmitSerialDataFunction(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size));
 
@@ -112,7 +129,7 @@ void DLTuc_RegisterTransmitSerialDataFunction(void LLSerialTrDataFunctionC(uint8
  ************************************************************************************************
  * \brief DLTuc_RegisterGetTimeStampMsCallback
  * \details function to update time stamp in library
-* \param in GetSysTime - transmit function pointer
+* \param in GetSysTime - pointer to function which allow to read system time in msec
  * \param Time - system time in ms
  *************************************************************************************************/
 void DLTuc_RegisterGetTimeStampMsCallback(uint32_t GetSysTime(void));
@@ -139,7 +156,6 @@ void DLTuc_MessageTransmitDone(void);
  * \param in ... parameters same as in printf function
  *************************************************************************************************/
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
-
 
 
 

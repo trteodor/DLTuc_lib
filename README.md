@@ -30,7 +30,10 @@ https://github.com/trteodor/nnRTOS__Nihil-Novi-RTOS
 
 ![NucleoScreen](https://github.com/trteodor/DLTuc_lib/blob/master/docs/pictures/NucleoBoard.jpg)
 
-**_Actually only example called "simple" is maintance because this approach is very convience for me and should be platform independent_**
+If you want just check the library, compiled binary is also included for the board above - check direcory:
+examples\binaries
+
+**_Actually only example called "simple" is maintanced because this approach is very convience for me and should be platform independent_**
 
 You are ready to start adventure with this example when you have this tools in your environment: (environment variables)!
 
@@ -40,8 +43,7 @@ You are ready to start adventure with this example when you have this tools in y
 
     * make 3.81 or newer
 
-Finally just call make in directory of this repository or project
-
+Finally just call "make" in directory of this repository or project
 
 # References
 
