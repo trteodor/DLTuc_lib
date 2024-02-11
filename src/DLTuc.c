@@ -508,9 +508,8 @@ void DLTuc_MessageTransmitDone(void)
 
 	if(LogDroppedFlag == true && (ActualSysTime - PrevLogDropSendTime > 200) )
 	{
-		/*To avoid blocking read messages..*/
-		/*Because if i'll always send the DROP Message 
-		* then i don't gonna read any message from RB..*/
+		/* If DLTuc will always send the DROP Message info,
+		* then will not read any message from RB..*/
 		PrevLogDropSendTime = ActualSysTime;
 		LogDroppedFlag = false;
 
@@ -546,7 +545,7 @@ uint16_t Size;
 	Size = vsprintf((char *)DltDebugTmpBuf + DLT_ACT_HOLE_HEADER_SIZE, (char *)Payload,ap);
 	va_end(ap);
 
-	/*Additional zero on the end of message -therefore it works with more stability */
+	/*Additional zero on the end of message - thanks to that it works with more stability */
 	Size++;
 	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
 	Size++;
@@ -571,9 +570,9 @@ DLTuc_OS_CRITICAL_START();
 		if(DLT_RB_TransmitRead(&DltTrsmtRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
 			{
 				TransmitReadyStateFlag = false;
-DLTuc_OS_CRITICAL_END(); /*Transmission must be started in this contex now...*/
+DLTuc_OS_CRITICAL_END(); /*Log transmission must be started in this contex...*/
 							/*It's important to be aware of this fact!!*/
-							/*In this library for sure you may find some bugs..*/
+							/*In this library, for sure you may find some bugs..*/
 				if(ExtSerialTrDataFunctionCb != NULL)
 				{
 					ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);

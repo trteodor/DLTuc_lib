@@ -4,8 +4,8 @@
  * @date 1 Jul 2022
  * @brief This file is a part of DLTuc library
  *
- * In this header you can find types, Api function provided by DLTuc library,
- * and usefull macros for convience use DLTuc library in logging purposes
+ * In this header, you can find types, Api functions, which are provided by DLTuc library
+ * Usefull macros, for convience usage of DLTuc library in logging purposes
  *
  * Requirments:
  * Around ~2kB of RAM
@@ -52,26 +52,26 @@
  * Definitions of DLT services.
  */
 #define DLT_SERVICE_ID_SET_LOG_LEVEL                   0x01 /**< Service ID: Set log level */
-#define DLT_SERVICE_ID_SETRACE_STATUS                0x02 /**< Service ID: Set trace status */
+#define DLT_SERVICE_ID_SETRACE_STATUS                  0x02 /**< Service ID: Set trace status */
 #define DLT_SERVICE_ID_GET_LOG_INFO                    0x03 /**< Service ID: Get log info */
 #define DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL           0x04 /**< Service ID: Get dafault log level */
 #define DLT_SERVICE_ID_STORE_CONFIG                    0x05 /**< Service ID: Store configuration */
-#define DLT_SERVICE_ID_RESETO_FACTORY_DEFAULT        0x06 /**< Service ID: Reset to factory defaults */
+#define DLT_SERVICE_ID_RESETO_FACTORY_DEFAULT          0x06 /**< Service ID: Reset to factory defaults */
 #define DLT_SERVICE_ID_SET_COM_INTERFACE_STATUS        0x07 /**< Service ID: Set communication interface status */
 #define DLT_SERVICE_ID_SET_COM_INTERFACE_MAX_BANDWIDTH 0x08 /**< Service ID: Set communication interface maximum bandwidth */
 #define DLT_SERVICE_ID_SET_VERBOSE_MODE                0x09 /**< Service ID: Set verbose mode */
 #define DLT_SERVICE_ID_SET_MESSAGE_FILTERING           0x0A /**< Service ID: Set message filtering */
-#define DLT_SERVICE_ID_SETIMING_PACKETS              0x0B /**< Service ID: Set timing packets */
-#define DLT_SERVICE_ID_GET_LOCALIME                  0x0C /**< Service ID: Get local time */
+#define DLT_SERVICE_ID_SETIMING_PACKETS                0x0B /**< Service ID: Set timing packets */
+#define DLT_SERVICE_ID_GET_LOCALIME                    0x0C /**< Service ID: Get local time */
 #define DLT_SERVICE_ID_USE_ECU_ID                      0x0D /**< Service ID: Use ECU id */
 #define DLT_SERVICE_ID_USE_SESSION_ID                  0x0E /**< Service ID: Use session id */
-#define DLT_SERVICE_ID_USEIMESTAMP                   0x0F /**< Service ID: Use timestamp */
+#define DLT_SERVICE_ID_USEIMESTAMP                     0x0F /**< Service ID: Use timestamp */
 #define DLT_SERVICE_ID_USE_EXTENDED_HEADER             0x10 /**< Service ID: Use extended header */
 #define DLT_SERVICE_ID_SET_DEFAULT_LOG_LEVEL           0x11 /**< Service ID: Set default log level */
-#define DLT_SERVICE_ID_SET_DEFAULTRACE_STATUS        0x12 /**< Service ID: Set default trace status */
+#define DLT_SERVICE_ID_SET_DEFAULTRACE_STATUS          0x12 /**< Service ID: Set default trace status */
 #define DLT_SERVICE_ID_GET_SOFTWARE_VERSION            0x13 /**< Service ID: Get software version */
 #define DLT_SERVICE_ID_MESSAGE_BUFFER_OVERFLOW         0x14 /**< Service ID: Message buffer overflow */
-#define DLT_SERVICE_ID_CALLSW_CINJECTION              0xFFF /**< Service ID: Message Injection (minimal ID) */
+#define DLT_SERVICE_ID_CALLSW_CINJECTION               0xFFF /**< Service ID: Message Injection (minimal ID) */
 
 
 /**!
@@ -164,7 +164,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /**!
  * \brief LOGL(level, str, ...)
- * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add 
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have to add
  * log_level, DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  *
  * */
@@ -175,7 +175,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /**!
  * \brief LOGL(level, str, ...)
- * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have to add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  *
  * */
 #define LOGL(log_level, str, ...)\
@@ -185,7 +185,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /**!
  * @brief LOGF(log_level, str, ...)
- * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have to add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  * Additionally add the name of the calling function
  *
  *
@@ -197,7 +197,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 /**!
  * \brief LOGFF(log_level, str, ...)
- * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
+ * \details Transmit DltLog using function DLTuc_LogOutVarArgs but user don't have to add DLT_LOG_APPID_VALUE and DLT_LOG_CONTEX_VALUE
  * Additionally add the name of the calling function and file name
  *
  *

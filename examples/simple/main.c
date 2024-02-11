@@ -128,7 +128,7 @@ int main(void)
 		LOG("LogData TimeEnd: %lu DELTA:%lu",GetSysTime(),GetSysTime() - TimeStartLog );
 		DelayMs(1000);
 		LOGL(DL_WARN, "Orange it's a sweet fruit");
-		DelayMs(1000);
+		DelayMs(3000);
 	}
 }
 

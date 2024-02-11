@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -21,8 +21,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#define DLT_LOG_CONTEX      "MAIN"
-#define DLT_LOG_APPID      "0001"
 #include "DLTuc.h"
 /* USER CODE END Includes */
 
@@ -33,6 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,6 +42,7 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
+DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
 
@@ -59,15 +59,32 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+	DLTuc_RawDataReceiveDone(Size);
+}
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	DLTuc_MessageTransmitDone();
 }
 
-
 void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size)
 {
 	HAL_UART_Transmit_DMA(&huart2, DltLogData, Size);
+}
+
+void LLSerialRecDataFunctionC(uint8_t *DltLogData, uint16_t Size)
+{
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, DltLogData, Size);
+}
+
+void DltInjectDataRcvd(uint32_t AppId, uint32_t ConId,uint32_t ServId,uint8_t *Data, uint16_t Size)
+{
+	LOG("RecInjectionData: %s, ServId: %d Size: %d", Data,ServId,Size)
+
 }
 
 /* USER CODE END 0 */
@@ -103,9 +120,21 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  DLTuc_RegisterTransmitSerialDataFunction(LLSerialTrDataFunctionC);
-  DLTuc_RegisterGetTimeStampMsCallback(HAL_GetTick);
-  /* USER CODE END 2 */
+
+	/*Register Low Level Transmit/Receive functions for DLTuc Library*/
+	DLTuc_RegisterTransmitSerialDataFunction(LLSerialTrDataFunctionC);
+	DLTuc_RegisterReceiveSerialDataFunction(LLSerialRecDataFunctionC);
+
+	DLTuc_RegisterGetTimeStampMsCallback(HAL_GetTick); 	/*Register GetSysTime function*/
+	/*The function "GetSysTime" must return the time in ms*/
+
+    DLTuc_RegisterInjectionDataReceivedCb(DltInjectDataRcvd);
+
+	/*Now ucDLTlib is ready to work!*/
+	LOGL(DL_INFO, "DLT TESTS START!!!");
+
+	LOG("Compilation date: %s time: %s", __DATE__, __TIME__);
+
 	for(int i=0; i<50; i++)
 	{
 		LOGL(DL_DEBUG, "Hello DLT with period 5ms");
@@ -124,19 +153,30 @@ int main(void)
 		LOGL(DL_INFO, "Dropped log...  %d" , 5);
 		LOGL(DL_FATAL, "Dropped log...   %d" , 5);
 	HAL_Delay(100);
+	static uint32_t TimeStartLog = 0u;
 
-	while(1)
-	{
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+		TimeStartLog = HAL_GetTick();
+		LOG("LogData TimeStart: %lu ",TimeStartLog )
 		LOG("Compilation date: %s time: %s", __DATE__, __TIME__);
-		/*Send example Logs in loop...*/
+		// /*Send example Logs in loop...*/
 		LOGL(DL_ERROR, "Hello DLT Again Arg1 %d Arg2 :%d" , 2565, 56);
-		LOGFF(DL_FATAL, "GENERALLY DLT Again1");
+		LOGFF(DL_FATAL, "FATAL LOG, ucTime: %d", HAL_GetTick());
 		LOGF(DL_DEBUG, "AnotherTest DLT Again");
 		LOG("AnotherTest2 DLT Again");
+		LOG("LogData TimeEnd: %lu DELTA:%lu",HAL_GetTick(),HAL_GetTick() - TimeStartLog );
 		HAL_Delay(1000);
 		LOGL(DL_WARN, "Orange it's a sweet fruit");
-		HAL_Delay(1000);
-	}
+		HAL_Delay(3000);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
   /* USER CODE END 3 */
 }
 
@@ -221,6 +261,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
   /* DMA1_Channel7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
@@ -235,6 +278,8 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -262,6 +307,8 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */

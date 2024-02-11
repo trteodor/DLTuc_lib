@@ -4,7 +4,7 @@ DLTuc - it's a trivial library to send DLT logs from MCU like STM32 or any other
 Prepared library should work correctly also with Real Time Operation System (RTOS), after correct configuration (check file: src/DLTucConfig_template)
 
 Demo Video:
- * https://youtu.be/WWnudktQlP0
+ * https://youtu.be/htQmj42eDHw
 
 To view these logs i used the DLT-Viewer:
  * https://github.com/COVESA/dlt-viewer
