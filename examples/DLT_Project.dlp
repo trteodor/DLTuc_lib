@@ -106,114 +106,12 @@
     </pfilter>
     <pfilter>
         <type>2</type>
-        <name>CTX3</name>
-        <ecuid>STF1</ecuid>
-        <applicationid>NUM3</applicationid>
-        <contextid>CTX3</contextid>
-        <headertext>2023/02/10 23:01:57.993000 4.0010 27 STF1 NUM3 CTX3 0 log fatal verbose 1</headertext>
-        <payloadtext>FILE:Contex3.c() FUN:TaskContex3() LOG: Some more extra messages!</payloadtext>
-        <regex_search></regex_search>
-        <regex_replace></regex_replace>
-        <messageIdMin>0</messageIdMin>
-        <messageIdMax>0</messageIdMax>
-        <enableregexp_Appid>0</enableregexp_Appid>
-        <enableregexp_Context>0</enableregexp_Context>
-        <enableregexp_Header>0</enableregexp_Header>
-        <enableregexp_Payload>0</enableregexp_Payload>
-        <ignoreCase_Header>0</ignoreCase_Header>
-        <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>1</enablecontextid>
-        <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>0</enablepayloadtext>
-        <enablectrlmsgs>0</enablectrlmsgs>
-        <enableLogLevelMin>0</enableLogLevelMin>
-        <enableLogLevelMax>0</enableLogLevelMax>
-        <enableMarker>0</enableMarker>
-        <enableMessageId>0</enableMessageId>
-        <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#240f0f</filterColour>
-        <logLevelMax>0</logLevelMax>
-        <logLevelMin>0</logLevelMin>
-    </pfilter>
-    <pfilter>
-        <type>2</type>
-        <name>CTX1</name>
-        <ecuid>STF1</ecuid>
-        <applicationid>NUM1</applicationid>
-        <contextid>CTX1</contextid>
-        <headertext>2023/02/10 23:02:02.945000 9.0010 43 STF1 NUM1 CTX1 0 log info verbose 1</headertext>
-        <payloadtext>Hello Crazy World</payloadtext>
-        <regex_search></regex_search>
-        <regex_replace></regex_replace>
-        <messageIdMin>0</messageIdMin>
-        <messageIdMax>0</messageIdMax>
-        <enableregexp_Appid>0</enableregexp_Appid>
-        <enableregexp_Context>0</enableregexp_Context>
-        <enableregexp_Header>0</enableregexp_Header>
-        <enableregexp_Payload>0</enableregexp_Payload>
-        <ignoreCase_Header>0</ignoreCase_Header>
-        <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>1</enablecontextid>
-        <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>0</enablepayloadtext>
-        <enablectrlmsgs>0</enablectrlmsgs>
-        <enableLogLevelMin>0</enableLogLevelMin>
-        <enableLogLevelMax>0</enableLogLevelMax>
-        <enableMarker>0</enableMarker>
-        <enableMessageId>0</enableMessageId>
-        <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#030050</filterColour>
-        <logLevelMax>0</logLevelMax>
-        <logLevelMin>0</logLevelMin>
-    </pfilter>
-    <pfilter>
-        <type>2</type>
-        <name>CTX2</name>
-        <ecuid></ecuid>
-        <applicationid></applicationid>
-        <contextid>CTX2</contextid>
-        <headertext></headertext>
-        <payloadtext>CTX1</payloadtext>
-        <regex_search></regex_search>
-        <regex_replace></regex_replace>
-        <messageIdMin>0</messageIdMin>
-        <messageIdMax>0</messageIdMax>
-        <enableregexp_Appid>0</enableregexp_Appid>
-        <enableregexp_Context>0</enableregexp_Context>
-        <enableregexp_Header>0</enableregexp_Header>
-        <enableregexp_Payload>0</enableregexp_Payload>
-        <ignoreCase_Header>0</ignoreCase_Header>
-        <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>1</enablecontextid>
-        <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>0</enablepayloadtext>
-        <enablectrlmsgs>0</enablectrlmsgs>
-        <enableLogLevelMin>0</enableLogLevelMin>
-        <enableLogLevelMax>0</enableLogLevelMax>
-        <enableMarker>0</enableMarker>
-        <enableMessageId>0</enableMessageId>
-        <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#043600</filterColour>
-        <logLevelMax>0</logLevelMax>
-        <logLevelMin>0</logLevelMin>
-    </pfilter>
-    <pfilter>
-        <type>2</type>
-        <name>New Filter</name>
+        <name>LogDrop</name>
         <ecuid>uCID</ecuid>
         <applicationid>DLTC</applicationid>
         <contextid>DLTC</contextid>
-        <headertext>2023/02/11 13:16:19.789000 0.0000 0 uCID DLTC DLTC 0 log error verbose 1</headertext>
-        <payloadtext>LOG DROPPED</payloadtext>
+        <headertext>2024/02/11 21:22:44.251000 0.0000 0 uCID DLTC DLTC 0 log error verbose 1</headertext>
+        <payloadtext>LOG DROPPED!!!</payloadtext>
         <regex_search></regex_search>
         <regex_replace></regex_replace>
         <messageIdMin>0</messageIdMin>
@@ -225,18 +123,18 @@
         <ignoreCase_Header>0</ignoreCase_Header>
         <ignoreCase_Payload>0</ignoreCase_Payload>
         <enablefilter>1</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>0</enablecontextid>
+        <enableecuid>1</enableecuid>
+        <enableapplicationid>1</enableapplicationid>
+        <enablecontextid>1</enablecontextid>
         <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>1</enablepayloadtext>
+        <enablepayloadtext>0</enablepayloadtext>
         <enablectrlmsgs>0</enablectrlmsgs>
         <enableLogLevelMin>0</enableLogLevelMin>
         <enableLogLevelMax>0</enableLogLevelMax>
         <enableMarker>0</enableMarker>
         <enableMessageId>0</enableMessageId>
         <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#740000</filterColour>
+        <filterColour>#ff0000</filterColour>
         <logLevelMax>0</logLevelMax>
         <logLevelMin>0</logLevelMin>
     </pfilter>
@@ -246,8 +144,8 @@
         <ecuid>uCID</ecuid>
         <applicationid>NUM1</applicationid>
         <contextid>MAIN</contextid>
-        <headertext>2023/02/11 13:16:19.794000 0.3500 54 uCID NUM1 MAIN 0 log info verbose 1</headertext>
-        <payloadtext>Log Drop testing</payloadtext>
+        <headertext>2024/02/11 21:24:03.078000 79.1850 219 uCID NUM1 MAIN 0 log info verbose 1</headertext>
+        <payloadtext>RecInjectionData:</payloadtext>
         <regex_search></regex_search>
         <regex_replace></regex_replace>
         <messageIdMin>0</messageIdMin>
@@ -270,18 +168,18 @@
         <enableMarker>0</enableMarker>
         <enableMessageId>0</enableMessageId>
         <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#6f7458</filterColour>
+        <filterColour>#004f1a</filterColour>
         <logLevelMax>0</logLevelMax>
         <logLevelMin>0</logLevelMin>
     </pfilter>
     <pfilter>
-        <type>1</type>
-        <name>Minimum_Warn</name>
+        <type>2</type>
+        <name>New Filter</name>
         <ecuid>uCID</ecuid>
         <applicationid>NUM1</applicationid>
         <contextid>MAIN</contextid>
-        <headertext>2023/02/11 13:16:28.882000 9.4540 184 uCID NUM1 MAIN 0 log warn verbose 1</headertext>
-        <payloadtext>Orange is sweet fruit</payloadtext>
+        <headertext>2024/02/11 21:24:04.364000 80.4540 227 uCID NUM1 MAIN 0 log info verbose 1</headertext>
+        <payloadtext>LogData TimeEnd</payloadtext>
         <regex_search></regex_search>
         <regex_replace></regex_replace>
         <messageIdMin>0</messageIdMin>
@@ -292,30 +190,30 @@
         <enableregexp_Payload>0</enableregexp_Payload>
         <ignoreCase_Header>0</ignoreCase_Header>
         <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>0</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>0</enablecontextid>
+        <enablefilter>1</enablefilter>
+        <enableecuid>1</enableecuid>
+        <enableapplicationid>1</enableapplicationid>
+        <enablecontextid>1</enablecontextid>
         <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>0</enablepayloadtext>
+        <enablepayloadtext>1</enablepayloadtext>
         <enablectrlmsgs>0</enablectrlmsgs>
-        <enableLogLevelMin>1</enableLogLevelMin>
+        <enableLogLevelMin>0</enableLogLevelMin>
         <enableLogLevelMax>0</enableLogLevelMax>
         <enableMarker>0</enableMarker>
         <enableMessageId>0</enableMessageId>
         <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#ffffff</filterColour>
+        <filterColour>#ff00ff</filterColour>
         <logLevelMax>0</logLevelMax>
-        <logLevelMin>3</logLevelMin>
+        <logLevelMin>0</logLevelMin>
     </pfilter>
     <pfilter>
-        <type>2</type>
-        <name>MarkFatal</name>
-        <ecuid>uCID</ecuid>
-        <applicationid>NUM1</applicationid>
-        <contextid>MAIN</contextid>
-        <headertext>2023/02/11 13:16:31.896000 12.4540 193 uCID NUM1 MAIN 0 log fatal verbose 1</headertext>
-        <payloadtext>FILE:main.c LINE: 82 FUN:Main LOG: GENERALLY DLT Again1</payloadtext>
+        <type>0</type>
+        <name>New Filter</name>
+        <ecuid></ecuid>
+        <applicationid></applicationid>
+        <contextid></contextid>
+        <headertext></headertext>
+        <payloadtext></payloadtext>
         <regex_search></regex_search>
         <regex_replace></regex_replace>
         <messageIdMin>0</messageIdMin>
@@ -326,7 +224,7 @@
         <enableregexp_Payload>0</enableregexp_Payload>
         <ignoreCase_Header>0</ignoreCase_Header>
         <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>0</enablefilter>
+        <enablefilter>1</enablefilter>
         <enableecuid>0</enableecuid>
         <enableapplicationid>0</enableapplicationid>
         <enablecontextid>0</enablecontextid>
@@ -338,77 +236,9 @@
         <enableMarker>0</enableMarker>
         <enableMessageId>0</enableMessageId>
         <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#2c0014</filterColour>
+        <filterColour>#ffffff</filterColour>
         <logLevelMax>1</logLevelMax>
-        <logLevelMin>0</logLevelMin>
-    </pfilter>
-    <pfilter>
-        <type>2</type>
-        <name>AnotherLogGreen</name>
-        <ecuid>uCID</ecuid>
-        <applicationid>NUM1</applicationid>
-        <contextid>MAIN</contextid>
-        <headertext>2023/02/11 13:20:21.726000 242.4540 116 uCID NUM1 MAIN 0 log debug verbose 1</headertext>
-        <payloadtext>FUN:Main LOG: AnotherTest DLT Again</payloadtext>
-        <regex_search></regex_search>
-        <regex_replace></regex_replace>
-        <messageIdMin>0</messageIdMin>
-        <messageIdMax>0</messageIdMax>
-        <enableregexp_Appid>0</enableregexp_Appid>
-        <enableregexp_Context>0</enableregexp_Context>
-        <enableregexp_Header>0</enableregexp_Header>
-        <enableregexp_Payload>0</enableregexp_Payload>
-        <ignoreCase_Header>0</ignoreCase_Header>
-        <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>0</enablecontextid>
-        <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>1</enablepayloadtext>
-        <enablectrlmsgs>0</enablectrlmsgs>
-        <enableLogLevelMin>0</enableLogLevelMin>
-        <enableLogLevelMax>0</enableLogLevelMax>
-        <enableMarker>0</enableMarker>
-        <enableMessageId>0</enableMessageId>
-        <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#007300</filterColour>
-        <logLevelMax>0</logLevelMax>
-        <logLevelMin>0</logLevelMin>
-    </pfilter>
-    <pfilter>
-        <type>2</type>
-        <name>BlueMarker</name>
-        <ecuid>uCID</ecuid>
-        <applicationid>NUM1</applicationid>
-        <contextid>MAIN</contextid>
-        <headertext>2023/02/11 13:24:58.921000 206.4540 6 uCID NUM1 MAIN 0 log error verbose 1</headertext>
-        <payloadtext>Hello DLT Again Arg1 2565 Arg2 :56</payloadtext>
-        <regex_search></regex_search>
-        <regex_replace></regex_replace>
-        <messageIdMin>0</messageIdMin>
-        <messageIdMax>0</messageIdMax>
-        <enableregexp_Appid>0</enableregexp_Appid>
-        <enableregexp_Context>0</enableregexp_Context>
-        <enableregexp_Header>0</enableregexp_Header>
-        <enableregexp_Payload>0</enableregexp_Payload>
-        <ignoreCase_Header>0</ignoreCase_Header>
-        <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
-        <enableecuid>0</enableecuid>
-        <enableapplicationid>0</enableapplicationid>
-        <enablecontextid>0</enablecontextid>
-        <enableheadertext>0</enableheadertext>
-        <enablepayloadtext>1</enablepayloadtext>
-        <enablectrlmsgs>0</enablectrlmsgs>
-        <enableLogLevelMin>0</enableLogLevelMin>
-        <enableLogLevelMax>0</enableLogLevelMax>
-        <enableMarker>0</enableMarker>
-        <enableMessageId>0</enableMessageId>
-        <enableRegexSearchReplace>0</enableRegexSearchReplace>
-        <filterColour>#0011a5</filterColour>
-        <logLevelMax>0</logLevelMax>
-        <logLevelMin>0</logLevelMin>
+        <logLevelMin>1</logLevelMin>
     </pfilter>
     <plugin>
         <name>DLT DBus Plugin</name>

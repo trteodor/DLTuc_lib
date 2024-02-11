@@ -113,15 +113,19 @@ int main(void)
 		LOGL(DL_INFO, "Dropped log...  %d" , 5);
 		LOGL(DL_FATAL, "Dropped log...   %d" , 5);
 	DelayMs(100);
+	static uint32_t TimeStartLog = 0u;
 
 	while(1)
 	{
+		TimeStartLog = GetSysTime();
+		LOG("LogData TimeStart: %lu ",TimeStartLog )
 		LOG("Compilation date: %s time: %s", __DATE__, __TIME__);
 		// /*Send example Logs in loop...*/
 		LOGL(DL_ERROR, "Hello DLT Again Arg1 %d Arg2 :%d" , 2565, 56);
-		LOGFF(DL_FATAL, "GENERALLY DLT Again1");
+		LOGFF(DL_FATAL, "FATAL LOG, ucTime: %d", GetSysTime());
 		LOGF(DL_DEBUG, "AnotherTest DLT Again");
 		LOG("AnotherTest2 DLT Again");
+		LOG("LogData TimeEnd: %lu DELTA:%lu",GetSysTime(),GetSysTime() - TimeStartLog );
 		DelayMs(1000);
 		LOGL(DL_WARN, "Orange it's a sweet fruit");
 		DelayMs(1000);
