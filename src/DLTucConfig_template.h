@@ -18,8 +18,14 @@
 #ifndef __DLT_CONFIG__
 #define __DLT_CONFIG__
 
+/*
+ * *******************************************************************************************
+ * Exported config defines
+ * *******************************************************************************************
+ * */
+
 /*Comment this line to turn off all logs..*/
-#define LOGS_ENABLE 
+#define LOGS_ENABLE
 
 /*Pass here the entry critical entry function for your RTOS or
   Interrupt block functions if you want use the library from diffrent context*/

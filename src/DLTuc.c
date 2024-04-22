@@ -1,10 +1,10 @@
 /**
  * @file DLTuc.c
- * @author teodor
+ * @author Teodor Rosolowski
  * @date 1 Jul 2022
  * @brief This file is a part of DLTuc library
  *
- * In this source file you can find hole DLTuc library implementation..
+ * In this source file you will find entire implementation of the DLTuc lib.
  *
  * Requirments:
  * Around ~2kB of RAM
@@ -12,6 +12,12 @@
  * DLT_TRANSMIT_RING_BUFFER_SIZE, DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE
  *
  */
+
+/*
+ * *******************************************************************************************
+ * Includes
+ * *******************************************************************************************
+ * */
 #include "DLTuc.h"
 
 #include "stdio.h"
@@ -22,15 +28,25 @@
 #include <string.h>
 
 /*
+ * *******************************************************************************************
+ * Local defines
+ * *******************************************************************************************
+ * */
+
+/*
 * @brief DLT_ACT_HOLE_HEADER_SIZE hole header sum
 * Standard Header + Extended + TypeInfo
 * Don't modify it if you aren't sure what are you doing!!!
 */
 #define DLT_ACT_HOLE_HEADER_SIZE 32
 
+/*
+ * *******************************************************************************************
+ * Local types
+ * *******************************************************************************************
+ * */
 
-
-
+/* Prototypes to improve readability.. */
 /*typedefs for future use..*/
 // typedef
 // {
@@ -54,7 +70,7 @@
 
 
 /**!
- * \brief RB_Status 
+ * \brief RB_Status
  * \details ---
  * */
 typedef enum
@@ -64,7 +80,7 @@ typedef enum
 } RB_Status;
 
 /**!
- * \brief DltRingBufferTransmit_t 
+ * \brief DltRingBufferTransmit_t
  * \details ---
  * */
 typedef struct DltRingBufferTransmit_Tag
@@ -89,20 +105,34 @@ typedef struct BluRingBufferReceive_Tag
 
 /**
  * *******************************************************************************************
- * Static variables declaration and function prototypes
+ * Static variables
  * *******************************************************************************************
  * */
+
+/**!
+ * \brief ExtSerialTrDataFunctionCb
+ * \details ---
+ * */
 static void (*ExtSerialTrDataFunctionCb)(uint8_t *DltLogData, uint8_t Size);
+
 static void (*ExtSerialRecDataFunctionCb)(uint8_t *RecDataBuff, uint16_t Size);
+
 static void (*ExtInfoInjectionDataRcvdCb)(uint32_t AppId, uint32_t ConId,uint32_t ServId,uint8_t *Data, uint16_t Size);
 
 static uint32_t (*GetSystemTimeMs)(void);
 
+/**!
+ * \brief LogDroppedFlag
+ * \details ---
+ * */
 static bool LogDroppedFlag =false;
+
 static uint32_t PrevLogDropSendTime = 0u;
 
 static uint8_t DltLogDroppedInfo[] = "LOG DROPPED!!!";
-static uint8_t DltLogDroppedInfoBuffer[60] = {0};
+
+static uint8_t DltLogDroppedInfoBuffer[60] = {0}; /* TODO: Remove magic number..*/
+
 static uint8_t DLtLogDroppedSize = 0;
 
 static uint8_t DltDebugTmpBuf[DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE]; /*Buffer used to prepare single message for OutPut Circular buffer*/
@@ -110,29 +140,49 @@ static uint8_t DltDebugTmpBuf[DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE]; /*Buffer us
 static uint8_t ActDltMessageCounter =0;
 
 static DltRingBufferTransmit_t DltTrsmtRingBuffer;
+
 static uint8_t DltTrsmtMessagesTab[DLT_TRANSMIT_RING_BUFFER_SIZE][DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE];
 
 static BluRingBufferReceive_t BleMainReceiveRingBuffer;
+
 static uint8_t BluMainReceiveMessagesTab[DLT_RECEIVE_RING_BUFFER_SIZE][DLT_REC_SINGLE_MESSAGE_MAX_SIZE];
 
 static volatile uint8_t TransmitReadyStateFlag = true; /*TmpFromDma for example*/
 
-/*brief for each funtion is added above implemention... */
-static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size);
-static RB_Status DLT_RB_TransmitRead(DltRingBufferTransmit_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
-static RB_Status DLT_RB_TransmitWrite(DltRingBufferTransmit_t *Buf,uint8_t *DltLogData, uint8_t MessageSize);
-
-
-static RB_Status DLT_RB_Receive_GetNextMessageAddress(BluRingBufferReceive_t *Buf, uint8_t **WriteAddress);
-static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
-
 /*
  *********************************************************************************************
- * Static function declaration section
+ * Prototypes of static functions
  ********************************************************************************************
  */
 
+/*!
+ ************************************************************************************************
+ * \brief PrepareWholeHeader
+ * \details A very lazy implementation of DLT Header - but it works fine
+ * Please refer to: https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_PRS_DiagnosticLogAndTraceProtocol.pdf
+ ************************************************************************************************/
+static void PrepareWholeHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size);
 
+/*!
+ ************************************************************************************************
+ * \brief DLT_RB_TransmitRead Function to read data from ring buffer
+ * \details --
+ * \param RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * \param out MessageSize - size of the "DltLogData" (return value)
+ * \param out MessagePointer - pointer to the message stored in RingBuffer (return value)
+ *
+ * */
+static RB_Status DLT_RB_TransmitRead(DltRingBufferTransmit_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
+
+/*!
+ ************************************************************************************************
+ * \brief DLT_RB_TransmitWrite
+ * \details --
+ * \param in RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * \param in DltLogData - pointer to the data stored in RingBuffer
+ * \param in MessageSize - size of the "DltLogData"
+ ************************************************************************************************/
+static RB_Status DLT_RB_TransmitWrite(DltRingBufferTransmit_t *Buf,uint8_t *DltLogData, uint8_t MessageSize);
 
 /*!
  ************************************************************************************************
@@ -141,16 +191,34 @@ static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *Messa
  * \param in Buf -
  * \param in WriteAddress -
  ************************************************************************************************/
+static RB_Status DLT_RB_Receive_GetNextMessageAddress(BluRingBufferReceive_t *Buf, uint8_t **WriteAddress);
+
+/*!
+ ************************************************************************************************
+ * \brief DLT_RB_Receive_Read Function to read data from ring buffer
+ * \details --
+ * \param RingBuffer_t *Buf - pointer to Ring Buffer structure
+ * \param out MessageSize - size of the "BleLogData" (return value)
+ * \param out MessagePointer - pointer to the message stored in RingBuffer (return value)
+ *
+ * */
+static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer);
+
+/*
+ *********************************************************************************************
+ * Static functions implementation
+ ********************************************************************************************
+ */
+
 static RB_Status DLT_RB_Receive_GetNextMessageAddress(BluRingBufferReceive_t *Buf, uint8_t **WriteAddress)
 {
-	static uint8_t DefaultBlindBuffer[20];
-
-
+	/* TODO: The implementation isn't optimal...*/
+	static uint8_t DefaultBlindBuffer[DLT_REC_SINGLE_MESSAGE_MAX_SIZE];
 
 	/*Mark previous message as ready to read*/
 	Buf->ReadyToRead[Buf->Head] = true;
 
-	// Calculate new Head pointer value
+	// Compute new Head pointer value of a ring buffer
 	uint16_t HeadTmp = (Buf->Head + 1) % DLT_RECEIVE_RING_BUFFER_SIZE;
 
 	// Check if there is one free space ahead the Head buffer
@@ -172,19 +240,8 @@ static RB_Status DLT_RB_Receive_GetNextMessageAddress(BluRingBufferReceive_t *Bu
 	return RB_OK;
 }
 
-
-/*!
- ************************************************************************************************
- * \brief DLT_RB_Receive_Read Function to read data from ring buffer
- * \details --
- * \param RingBuffer_t *Buf - pointer to Ring Buffer structure
- * \param out MessageSize - size of the "BleLogData" (return value)
- * \param out MessagePointer - pointer to the message stored in RingBuffer (return value)
- *
- * */
 static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer)
 {
-
 	if(Buf->ReadyToRead[Buf->Tail] == false)
 	{
 		/*Any message in ring buffer isn't ready to read*/
@@ -200,8 +257,6 @@ static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *Messa
 		return RB_ERROR;
 	}
 
-
-
 	// Write current value from buffer to pointer from argument
 	*MessageSize = Buf->MessageSize[Buf->Tail];
 	*MessagePointer = &BluMainReceiveMessagesTab[Buf->Tail][0];
@@ -213,16 +268,6 @@ static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *Messa
 	return RB_OK;
 }
 
-
-/*!
- ************************************************************************************************
- * \brief DLT_RB_TransmitRead Function to read data from ring buffer
- * \details --
- * \param RingBuffer_t *Buf - pointer to Ring Buffer structure
- * \param out MessageSize - size of the "DltLogData" (return value)
- * \param out MessagePointer - pointer to the message stored in RingBuffer (return value)
- * 
- * */
 static RB_Status DLT_RB_TransmitRead(DltRingBufferTransmit_t *Buf, uint8_t *MessageSize, uint8_t **MessagePointer)
 {
 	// Check if Tail hit Head
@@ -243,14 +288,6 @@ static RB_Status DLT_RB_TransmitRead(DltRingBufferTransmit_t *Buf, uint8_t *Mess
 	return RB_OK;
 }
 
-/*!
- ************************************************************************************************
- * \brief DLT_RB_TransmitWrite
- * \details --
- * \param in RingBuffer_t *Buf - pointer to Ring Buffer structure
- * \param in DltLogData - pointer to the data stored in RingBuffer
- * \param in MessageSize - size of the "DltLogData" 
- ************************************************************************************************/
 static RB_Status DLT_RB_TransmitWrite(DltRingBufferTransmit_t *Buf,uint8_t *DltLogData, uint8_t MessageSize)
 {
 uint8_t ActualWriteIndex;
@@ -266,9 +303,9 @@ DLTuc_OS_CRITICAL_START();
 		// There is no space in the buffer - return an error
 		return RB_ERROR;
 	}
-ActualWriteIndex = Buf->Head;
-Buf->Head = HeadTmp;
-DLTuc_OS_CRITICAL_END();
+	ActualWriteIndex = Buf->Head;
+	Buf->Head = HeadTmp;
+	DLTuc_OS_CRITICAL_END();
 
 	// Store a value into the buffer
 	Buf->Buffer[ActualWriteIndex] = MessageSize;
@@ -282,32 +319,26 @@ DLTuc_OS_CRITICAL_END();
 	return RB_OK;
 }
 
-/*!
- ************************************************************************************************
- * \brief PrepareHoleHeader
- * \details A very lazy implementation of DLT Header - but it works fine
- * Please refer to: https://www.autosar.org/fileadmin/user_upload/standards/foundation/1-0/AUTOSAR_PRS_DiagnosticLogAndTraceProtocol.pdf
- ************************************************************************************************/
-static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size)
+static void PrepareWholeHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, uint16_t size)
 {
 	uint32_t ActualTime = 0;
 
 	if(GetSystemTimeMs != NULL)
 	{
-		ActualTime = GetSystemTimeMs() * 10; 
+		ActualTime = GetSystemTimeMs() * 10U; 
 				/*Multiply by 10 to get value in MS also in DLTViewer
 				*Reson: Resolution in DLT Viewer is equal: 10^-4
 				*/
 	}
 
-	if(size > (254 -32) )
+	if(size > ((UINT8_MAX -1) - DLT_ACT_HOLE_HEADER_SIZE) )
 	{
-		/*Error to handle or please develop this function */
-		while(1)
-		{
-			/*For develop phase lock the app*/
-		}
-
+		/*Error to handle, or please develop this function to handle input size > UINT8_MAX */
+		// while(1)
+		// {
+		// 	/*For development phase: lock the app*/
+		// }
+		size = size - DLT_ACT_HOLE_HEADER_SIZE -1;
 	}
 
 
@@ -374,43 +405,42 @@ static void PrepareHoleHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId,
 	DltDebugTmpBuf[29]= 0x00; /**/
 
 	/*Argument 1*/
-	DltDebugTmpBuf[30]= size; /*the size of the load in simplified form, but not exactly but generally yes*/
+	DltDebugTmpBuf[30]= size; 
+	/* Size of the load in simplified form, please verify in documentation of DLT protcool documentation */
 	DltDebugTmpBuf[31]= 0x00; /**/
 }
 
-
 /*
  ****************************************************************************************************
- * exported functions declarations section START
- * exported functions description is added in header file
+ * Exported functions implementation.
+ * Descriptions are added in header file
  *****************************************************************************************************
  */
 
 void DLTuc_RawDataReceiveDone(uint16_t Size)
 {
-	static uint8_t *MessageReceiveBufferAddress;
+	static uint8_t *MessageReceiveBufferAddress = NULL;
+	uint8_t *MessageToRead_p = NULL;
+	uint8_t MessageToReadSize= 0U;
+
 	DLT_RB_Receive_GetNextMessageAddress(&BleMainReceiveRingBuffer,&MessageReceiveBufferAddress);
 	if(ExtSerialRecDataFunctionCb != NULL){
 		ExtSerialRecDataFunctionCb(MessageReceiveBufferAddress,DLT_REC_SINGLE_MESSAGE_MAX_SIZE);
 	}
 
-	uint8_t *MessageToRead_p = NULL;
-	uint8_t MessageToReadSize= 0U;
-
 	/*
-	* The receive buffer isn't handled fully correctly, it require deeper investigation
+	* The receive buffer isn't handled fully correctly, it require deeper investigation.
 	* However, it is possible to receive the Injection messages, and base commands if are transmitted with breakes..
 	* Received DTL messages are divided by the "IDLE" irq for now.., not by the size and etc...
-	*
 	*/
 	if(DLT_RB_Receive_Read(&BleMainReceiveRingBuffer, &MessageToReadSize,&MessageToRead_p) == RB_OK)
 	{
-		if(MessageToRead_p[4] == 53)
+		if(MessageToRead_p[4] == 53) /**/
 		{
 			/*Use Extended, with EcuId, with Timestamp, end at[15]
 			then Extended data as follow:
 			[16] ==22-? - non verbose, type: control, MSTP: fatal
-			[17] numOfArgs == 1 - TODO: Only 1 argument is for nowsupported!!! 
+			[17] numOfArgs == 1 - TODO: Only 1 argument is for nowsupported!!!
 			[18-21] - AppId
 			[22-25] - ContexId
 			[26-29] - ServiceId
@@ -472,13 +502,12 @@ void DLTuc_RegisterReceiveSerialDataFunction(void LLSerialRecDataFunctionC(uint8
 	}
 }
 
-
 void DLTuc_RegisterTransmitSerialDataFunction(void LLSerialTrDataFunctionC(uint8_t *DltLogData, uint8_t Size))
 {
 	ExtSerialTrDataFunctionCb = LLSerialTrDataFunctionC;
 
 	/*Preapre LOG DROPPED Info Log*/
-	PrepareHoleHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );
+	PrepareWholeHeader(DL_ERROR,0x444C5443, 0x444C5443,sizeof(DltLogDroppedInfo) );
 
 	/*Payload!!!*/
 	/*Copy payload text temporary*/
@@ -494,7 +523,7 @@ void DLTuc_RegisterTransmitSerialDataFunction(void LLSerialTrDataFunctionC(uint8
 
 	DLtLogDroppedSize = DLT_ACT_HOLE_HEADER_SIZE + sizeof(DltLogDroppedInfo);
 }
-/******************************************************************************************/
+
 void DLTuc_MessageTransmitDone(void)
 {
 	uint8_t TmpMessageSize=0;
@@ -519,12 +548,12 @@ void DLTuc_MessageTransmitDone(void)
 		}
 		return;
 	}
-DLTuc_OS_CRITICAL_START();
+	DLTuc_OS_CRITICAL_START();
 	if(DLT_RB_TransmitRead(&DltTrsmtRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
 	{
 		if(ExtSerialTrDataFunctionCb != NULL)
 		{
-DLTuc_OS_CRITICAL_END();
+			DLTuc_OS_CRITICAL_END();
 			ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
 		}
 	}
@@ -532,14 +561,15 @@ DLTuc_OS_CRITICAL_END();
 	{
 		TransmitReadyStateFlag = true;
 	}
-DLTuc_OS_CRITICAL_END();
+	DLTuc_OS_CRITICAL_END();
 }
 
-/******************************************************************************************/
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...)
 {
-va_list ap;
-uint16_t Size;
+	va_list ap;
+	uint16_t Size;
+	uint8_t TmpMessageSize=0;
+	uint8_t *TmpMessagePointer = NULL;
 
 	va_start(ap, Payload);
 	Size = vsprintf((char *)DltDebugTmpBuf + DLT_ACT_HOLE_HEADER_SIZE, (char *)Payload,ap);
@@ -547,12 +577,12 @@ uint16_t Size;
 
 	/*Additional zero on the end of message - thanks to that it works with more stability */
 	Size++;
-	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
+	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0U;
 	Size++;
-	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0x00;
+	DltDebugTmpBuf[DLT_ACT_HOLE_HEADER_SIZE + Size] = 0U;
 
-	PrepareHoleHeader(Level,AppId,ContextId,Size);
-	Size = Size +DLT_ACT_HOLE_HEADER_SIZE;
+	PrepareWholeHeader(Level,AppId,ContextId,Size);
+	Size = Size + DLT_ACT_HOLE_HEADER_SIZE;
 
 	if(DLT_RB_TransmitWrite(&DltTrsmtRingBuffer,DltDebugTmpBuf, Size) != RB_OK)
 	{
@@ -561,32 +591,31 @@ uint16_t Size;
 		DLTuc_OS_CRITICAL_END();
 	}
 
-	uint8_t TmpMessageSize=0;
-	uint8_t *TmpMessagePointer = NULL;
-
-DLTuc_OS_CRITICAL_START();
+	DLTuc_OS_CRITICAL_START();
 	if(TransmitReadyStateFlag == true)
 	{
 		if(DLT_RB_TransmitRead(&DltTrsmtRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
+		{
+			TransmitReadyStateFlag = false;
+			DLTuc_OS_CRITICAL_END();
+						/*Log transmission must be started in this contex...*/
+						/***********************************************/
+						/* It may be a bug in implementation - it must be investigated.. */
+						/* It's important to be aware of this fact!!*/
+						/***********************************************/
+			if(ExtSerialTrDataFunctionCb != NULL)
 			{
-				TransmitReadyStateFlag = false;
-DLTuc_OS_CRITICAL_END(); /*Log transmission must be started in this contex...*/
-							/*It's important to be aware of this fact!!*/
-							/*In this library, for sure you may find some bugs..*/
-				if(ExtSerialTrDataFunctionCb != NULL)
-				{
-					ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
-				}
-				else
-				{
-					// while(1); /*Please Register the callback...*/
-				}
+				ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
 			}
+			else
+			{
+				// while(1); /*Please Register the callback...*/
+			}
+		}
 	}
-DLTuc_OS_CRITICAL_END();
+	DLTuc_OS_CRITICAL_END();
 }
 
-/******************************************************************************************/
 void DLTuc_RegisterGetTimeStampMsCallback(uint32_t GetSysTime(void))
 {
 	GetSystemTimeMs = GetSysTime;

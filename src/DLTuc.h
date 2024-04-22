@@ -17,12 +17,23 @@
 #ifndef INC_DLT_LOGS_MCU_H_
 #define INC_DLT_LOGS_MCU_H_
 
+/*
+ * *******************************************************************************************
+ * Includes
+ * *******************************************************************************************
+ * */
 
 #include "stdint.h"
 #include <stdarg.h>
 #include <string.h>
 
 #include "DLTucConfig.h"
+
+/*
+ * *******************************************************************************************
+ * Exported defines
+ * *******************************************************************************************
+ * */
 
 /*@brief 
  *
@@ -73,6 +84,11 @@
 #define DLT_SERVICE_ID_MESSAGE_BUFFER_OVERFLOW         0x14 /**< Service ID: Message buffer overflow */
 #define DLT_SERVICE_ID_CALLSW_CINJECTION               0xFFF /**< Service ID: Message Injection (minimal ID) */
 
+/*
+ * *******************************************************************************************
+ * Exported types
+ * *******************************************************************************************
+ * */
 
 /**!
  * \brief DltLogLevel_t 
@@ -88,6 +104,12 @@ typedef enum
 	DL_VERBOSE =6,
 }DltLogLevel_t;
 
+/*
+ * *******************************************************************************************
+ * Exported function - API
+ * *******************************************************************************************
+ * */
+
 /*!
  ************************************************************************************************
  * \brief DLTuc_RawDataReceiveDone
@@ -99,10 +121,11 @@ void DLTuc_RawDataReceiveDone(uint16_t Size);
 /*!
  ************************************************************************************************
  * \brief DLTuc_RegisterReceiveSerialDataFunction
- * \details OPTIONAL - Use only if you need handle data receive, like Injection messages
+ * \details OPTIONAL - Use only if you need handle data receive, like Injection messages.
  * - Register callback function which will be used by DLTuc to start data receive process.
  * The Callback function is basicly called only after registration and if data packet has been received,
  * to start again receive data packet
+ * \param in LLSerialRecDataFunctionC ...
  ************************************************************************************************/
 void DLTuc_RegisterReceiveSerialDataFunction(void LLSerialRecDataFunctionC(uint8_t *DltLogData, uint16_t Size));
 
@@ -112,6 +135,7 @@ void DLTuc_RegisterReceiveSerialDataFunction(void LLSerialRecDataFunctionC(uint8
  * \details OPTIONAL - Use only if you need handle data receive, like Injection messages
  * Register injection data received call back
  * Use the function if you want register call back function to handle the Injection messages in your application
+ * \param in InjectionDataRcvd ...
  ************************************************************************************************/
 void DLTuc_RegisterInjectionDataReceivedCb
 		(void InjectionDataRcvd(uint32_t AppId, uint32_t ConId,uint32_t ServId,uint8_t *Data, uint16_t Size));
@@ -130,7 +154,6 @@ void DLTuc_RegisterTransmitSerialDataFunction(void LLSerialTrDataFunctionC(uint8
  * \brief DLTuc_RegisterGetTimeStampMsCallback
  * \details function to update time stamp in library
 * \param in GetSysTime - pointer to function which allow to read system time in msec
- * \param Time - system time in ms
  *************************************************************************************************/
 void DLTuc_RegisterGetTimeStampMsCallback(uint32_t GetSysTime(void));
 
@@ -158,8 +181,12 @@ void DLTuc_MessageTransmitDone(void);
 void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId, uint8_t *Payload, ...);
 
 
+/*
+ * *******************************************************************************************
+ * Additional macros to facilitate the use of the library
+ * *******************************************************************************************
+ * */
 
-/*Additional macros for convience use the library..*/
 #ifdef LOGS_ENABLE
 
 /**!
