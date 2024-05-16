@@ -24,24 +24,28 @@
  * *******************************************************************************************
  * */
 
-/*Comment this line to turn off all logs..*/
+/*Comment the line below to turn off all logs..*/
 #define LOGS_ENABLE
 
-/*Pass here the entry critical entry function for your RTOS or
-  Interrupt block functions if you want use the library from diffrent context*/
+/**!
+* \brief DLTuc_OS_CRITICAL_START & DLTuc_OS_CRITICAL_END
+* \details Pass here "critical entry" function for your RTOS or
+* irq block function. If you want use the library from diffrent contexts
+*/
 #define DLTuc_OS_CRITICAL_START()
 #define DLTuc_OS_CRITICAL_END()
 
-
-/*Default minimum log level to transmit the log*/
+/**!
+* \brief DLT_LOG_ENABLE_LEVEL
+* \details Default minimum log level to transmit the log
+*/
 #ifndef DLT_LOG_ENABLE_LEVEL
 #define DLT_LOG_ENABLE_LEVEL     DL_VERBOSE
 #endif
 
 /**!
 * \brief DLT_LOG_CONTEX
-* \details to define the minimum level log which will printed using the debug macros
-*
+* \details define dlt log contex
 */
 #ifndef DLT_LOG_CONTEX
 #define DLT_LOG_CONTEX      "DFLT"
@@ -49,8 +53,7 @@
 
 /**!
 * \brief DLT_LOG_APPID
-* \details to define the minimum level log which will printed using the debug macros
-*
+* \details define appid
 */
 #ifndef DLT_LOG_APPID
 #define DLT_LOG_APPID      "0000"
@@ -58,16 +61,19 @@
 
 /**!
 * \brief DLT_LOG_ECUID
-* \details you can define here you ECUID ..
-*
+* \details define here your ECUID ..
 */
 #define DLT_LOG_ECUID           "uCID" /*Electronic Controller Unit ID*/
 
+/**!
+* \brief DLT_ECU_SW_VER
+* \details define sw version
+*/
 #define DLT_ECU_SW_VER          0001
 
-/*
-*@brief DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE & DLT_TRANSMIT_RING_BUFFER_SIZE
-* these values define the size of the circular buffer and the maximum size of a single DLT message
+/**
+* \brief DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE & DLT_TRANSMIT_RING_BUFFER_SIZE
+* \details these values are used to define the size of the circular buffer and the maximum size of a single DLT message.
 * Size of out Circular DLT messages buffer is equal: DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE*DLT_TRANSMIT_RING_BUFFER_SIZE bytes
 */
 #define DLT_TRANSMIT_MAX_SINGLE_MESSAGE_SIZE 255

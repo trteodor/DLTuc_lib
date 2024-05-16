@@ -29,7 +29,7 @@
         </table>
         <other>
             <autoConnect>0</autoConnect>
-            <autoScroll>0</autoScroll>
+            <autoScroll>2</autoScroll>
             <autoMarkFatalError>0</autoMarkFatalError>
             <autoMarkWarn>0</autoMarkWarn>
             <autoMarkMarker>1</autoMarkMarker>
@@ -156,7 +156,7 @@
         <enableregexp_Payload>0</enableregexp_Payload>
         <ignoreCase_Header>0</ignoreCase_Header>
         <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
+        <enablefilter>0</enablefilter>
         <enableecuid>0</enableecuid>
         <enableapplicationid>0</enableapplicationid>
         <enablecontextid>0</enablecontextid>
@@ -190,7 +190,7 @@
         <enableregexp_Payload>0</enableregexp_Payload>
         <ignoreCase_Header>0</ignoreCase_Header>
         <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
+        <enablefilter>0</enablefilter>
         <enableecuid>1</enableecuid>
         <enableapplicationid>1</enableapplicationid>
         <enablecontextid>1</enablecontextid>
@@ -224,7 +224,7 @@
         <enableregexp_Payload>0</enableregexp_Payload>
         <ignoreCase_Header>0</ignoreCase_Header>
         <ignoreCase_Payload>0</ignoreCase_Payload>
-        <enablefilter>1</enablefilter>
+        <enablefilter>0</enablefilter>
         <enableecuid>0</enableecuid>
         <enableapplicationid>0</enableapplicationid>
         <enablecontextid>0</enablecontextid>
