@@ -126,7 +126,7 @@ static void (*ExtSerialRecDataFunctionCb)(uint8_t *RecDataBuff, uint16_t Size);
 
 static void (*ExtInfoInjectionDataRcvdCb)(uint32_t AppId, uint32_t ConId,uint32_t ServId,uint8_t *Data, uint16_t Size);
 
-static uint32_t (*GetSystemTimeMs)(void);
+static uint32_t (*ExtGetSystemTimeMsFunctionCb)(void);
 
 /**!
  * \brief LogDroppedFlag
@@ -138,7 +138,7 @@ static uint32_t PrevLogDropSendTime = 0u;
 
 static uint8_t DltLogDroppedInfo[] = "LOGS DROPPED!!! - DLTuc RING_BUFFER OVERFLOW";
 
-static uint8_t DltLogDroppedInfoBuffer[60] = {0}; /* TODO: Remove magic number..*/
+static uint8_t DltLogDroppedInfoBuffer[DLT_ACT_HEADER_SIZE + sizeof(DltLogDroppedInfo)] = {0}; /* TODO: Remove magic number..*/
 
 static uint8_t DLtLogDroppedSize = 0;
 
@@ -217,7 +217,6 @@ static RB_Status DLT_RB_Receive_Read(BluRingBufferReceive_t *Buf, uint8_t *Messa
 
 static RB_Status DLT_RB_Receive_GetNextMessageAddress(BluRingBufferReceive_t *Buf, uint8_t **WriteAddress)
 {
-	/* TODO: The implementation isn't optimal...*/
 	static uint8_t DefaultBlindBuffer[DLT_REC_SINGLE_MESSAGE_MAX_SIZE];
 
 	/*Mark previous message as ready to read*/
@@ -325,9 +324,9 @@ static void PrepareDltHeader(uint8_t Level, uint32_t AppId, uint32_t ContextId, 
 {
 	uint32_t ActualTime = 0;
 
-	if(GetSystemTimeMs != NULL)
+	if(ExtGetSystemTimeMsFunctionCb != NULL)
 	{
-		ActualTime = GetSystemTimeMs() * 10U; 
+		ActualTime = ExtGetSystemTimeMsFunctionCb() * 10U; 
 				/*Multiply by 10 to get value in MS also in DLTViewer
 				*Reson: Resolution in DLT Viewer is equal: 10^-4
 				*/
@@ -465,24 +464,26 @@ void DLTuc_RawDataReceiveDone(uint16_t Size)
 			else if(RecServiceId == DLT_SERVICE_ID_SET_LOG_LEVEL)
 			{
 				uint32_t NewLogLevel =  MessageToRead_p[30];
-				LOG("Set new log level request: %d How you triggered it?? , not supported", NewLogLevel);
+				LOG("Request: set new log level request: %d (Not supported)", NewLogLevel);
 				/* It is handled correctly by DLT Viewer?? */
 			}
 			else if(RecServiceId == DLT_SERVICE_ID_SET_DEFAULT_LOG_LEVEL)
 			{
 				uint32_t NewLogLevel =  MessageToRead_p[30];
-				LOG("Set default log level request: %d", NewLogLevel);
-
-				LOG("Not supported yet, I'm too lazy :)");
+				LOG("Request: set default log level request: %d (Not supported)", NewLogLevel);
 			}
 			else if(DLT_SERVICE_ID_GET_SOFTWARE_VERSION == RecServiceId)
 			{
-				LOG("ECU_SW_VERSION: %d", DLT_ECU_SW_VER);
+				LOG("DLTuc | LOADED_ECU_SW_VERSION: %d", DLT_ECU_SW_VER);
 				/*TODO: The lib should send here answer of control message... */
 			}
 			else if(DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL == RecServiceId)
 			{
-				LOG("Default log level: %d", DLT_LOG_ENABLE_LEVEL);
+				LOG("DLTuc | Configured enable log level: %d", DLT_LOG_ENABLE_LEVEL);
+			}
+			else
+			{
+				LOG("Incjection received RecServiceId:  %d  (Not supported)", RecServiceId);
 			}
 		}
 	}
@@ -525,11 +526,12 @@ void DLTuc_MessageTransmitDone(void)
 	uint8_t *TmpMessagePointer = NULL;
 	uint32_t ActualSysTime = 0u;
 
-	if(GetSystemTimeMs != NULL)
+	if(ExtGetSystemTimeMsFunctionCb != NULL)
 	{
-		ActualSysTime = GetSystemTimeMs();
+		ActualSysTime = ExtGetSystemTimeMsFunctionCb();
 	}
 
+	DLTuc_OS_CRITICAL_START();
 	if(LogDroppedFlag == true && (ActualSysTime - PrevLogDropSendTime > DLT_MINIMUM_LOG_DROP_PERIOD) )
 	{
 		/* If DLTuc will always send the DROP Message info,
@@ -541,15 +543,15 @@ void DLTuc_MessageTransmitDone(void)
 		{
 			ExtSerialTrDataFunctionCb(DltLogDroppedInfoBuffer, DLtLogDroppedSize);
 		}
+		DLTuc_OS_CRITICAL_END();
 		return;
 	}
 
-	DLTuc_OS_CRITICAL_START();
+
 	if(DLT_RB_TransmitRead(&DltTrsmtRingBuffer,&TmpMessageSize,&TmpMessagePointer) == RB_OK)
 	{
 		if(ExtSerialTrDataFunctionCb != NULL)
 		{
-			DLTuc_OS_CRITICAL_END();
 			ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
 		}
 	}
@@ -582,7 +584,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 		va_end(ap);
 
 		Size += DLT_ACT_HEADER_SIZE;
-		/*Add additional zeros on the end of message - thanks to that it work stable */
+		/*Add additional zeros at the end of message - thanks to that it work stable */
 		Size++;
 		DltTrsmtMessagesTab[writeIndex][Size] = 0U;
 		Size++;
@@ -593,9 +595,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 		Size = Size + DLT_ACT_HEADER_SIZE;
 		DltTrsmtRingBuffer.dataSize[writeIndex] = Size;
 
-		DLTuc_OS_CRITICAL_START();
 		DltTrsmtRingBuffer.readyToTransmit[writeIndex] = true;
-		DLTuc_OS_CRITICAL_END();
 	}
 
 	DLTuc_OS_CRITICAL_START();
@@ -605,13 +605,6 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 		{
 			if(TmpMessageSize != 0U)
 			{
-				TransmitReadyStateFlag = false;
-				DLTuc_OS_CRITICAL_END();
-							/*Log transmission must be started in this contex...*/
-							/***********************************************/
-							/* It may be a bug in implementation - it must be investigated.. */
-							/* It's important to be aware of this fact!!*/
-							/***********************************************/
 				if(ExtSerialTrDataFunctionCb != NULL)
 				{
 					ExtSerialTrDataFunctionCb(TmpMessagePointer, TmpMessageSize);
@@ -620,6 +613,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 				{
 					// while(1); /*Please Register the callback...*/
 				}
+				TransmitReadyStateFlag = false;
 			}
 		}
 	}
@@ -628,7 +622,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 
 void DLTuc_RegisterGetTimeStampMsCallback(uint32_t GetSysTime(void))
 {
-	GetSystemTimeMs = GetSysTime;
+	ExtGetSystemTimeMsFunctionCb = GetSysTime;
 }
 
 
