@@ -136,7 +136,7 @@ static bool LogDroppedFlag =false;
 
 static uint32_t PrevLogDropSendTime = 0u;
 
-static uint8_t DltLogDroppedInfo[] = "LOG DROPPED!!!";
+static uint8_t DltLogDroppedInfo[] = "LOGS DROPPED!!! - DLTuc RING_BUFFER OVERFLOW";
 
 static uint8_t DltLogDroppedInfoBuffer[60] = {0}; /* TODO: Remove magic number..*/
 
@@ -181,13 +181,13 @@ static RB_Status DLT_RB_TransmitRead(DltRingBufferTransmit_t *Buf, uint8_t *Mess
 
 /*!
  ************************************************************************************************
- * \brief DLT_RB_GetNextWriteIndex
+ * \brief DLT_RB_TransmitGetNextWriteIndex
  * \details --
  * \param in RingBuffer_t *Buf - pointer to Ring Buffer structure
  * \param out writeIndex - next index where DLT data should be stored, can be used only if fun return "RB_OK"
  * \return RB_OK if index available, otherwise RB_ERROR
  ************************************************************************************************/
-static RB_Status DLT_RB_GetNextWriteIndex(DltRingBufferTransmit_t *Buf,uint16_t *writeIndex);
+static RB_Status DLT_RB_TransmitGetNextWriteIndex(DltRingBufferTransmit_t *Buf,uint16_t *writeIndex);
 
 /*!
  ************************************************************************************************
@@ -300,7 +300,7 @@ static RB_Status DLT_RB_TransmitRead(DltRingBufferTransmit_t *Buf, uint8_t *Mess
 
 }
 
-static RB_Status DLT_RB_GetNextWriteIndex(DltRingBufferTransmit_t *Buf,uint16_t *writeIndex)
+static RB_Status DLT_RB_TransmitGetNextWriteIndex(DltRingBufferTransmit_t *Buf,uint16_t *writeIndex)
 {
 DLTuc_OS_CRITICAL_START();
 	// Calculate new Head pointer value
@@ -313,9 +313,9 @@ DLTuc_OS_CRITICAL_START();
 		// There is no space in the buffer - return an error
 		return RB_ERROR;
 	}
-	Buf->Head = HeadTmp;
-	Buf->readyToTransmit[Buf->Head] = false;
 	*writeIndex = Buf->Head;
+	Buf->readyToTransmit[Buf->Head] = false;
+	Buf->Head = HeadTmp;
 	DLTuc_OS_CRITICAL_END();
 
 	return RB_OK;
@@ -567,7 +567,7 @@ void DLTuc_LogOutVarArgs(DltLogLevel_t Level, uint32_t AppId, uint32_t ContextId
 	uint8_t *TmpMessagePointer = NULL;    /*  */
 	uint16_t writeIndex = 0U;             /*  */
 
-	if(DLT_RB_GetNextWriteIndex(&DltTrsmtRingBuffer,&writeIndex) != RB_OK)
+	if(DLT_RB_TransmitGetNextWriteIndex(&DltTrsmtRingBuffer,&writeIndex) != RB_OK)
 	{
 		DLTuc_OS_CRITICAL_START();
 		LogDroppedFlag = true;

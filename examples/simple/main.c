@@ -95,20 +95,16 @@ int main(void)
 
 	LOG("Compilation date: %s time: %s", __DATE__, __TIME__);
 
-	for(int i=0; i<50; i++)
+	for(int i=0; i<DLT_TRANSMIT_RING_BUFFER_SIZE; i++)
 	{
-		LOGL(DL_DEBUG, "Hello DLT with period 5ms");
-		DelayMs(5);
+		LOGL(DL_DEBUG, "Hello DLT with period 1ms");
+		DelayMs(1);
 	}
-	DelayMs(100);
+	DelayMs(500);
 	/*LOG DROP TEST*/
-	for(int i=0; i<20; i++)
+	for(int i=0; i<DLT_TRANSMIT_RING_BUFFER_SIZE + 10 ; i++)
 	{
-		LOG("Log Drop testing0 :)  %d" , 5);
-		LOG("Log Drop testing1 :)  %d" , 5);
-		LOG("Log Drop testing2:)  %d" , 5);
-		LOG("Log Drop testing3 :)  %d" , 5);
-		LOG("Log Drop testing4 :)  %d" , 5);
+		LOG("Log Drop testing :)  %d" , i);
 	}
 		LOGL(DL_INFO, "Dropped log...  %d" , 5);
 		LOGL(DL_FATAL, "Dropped log...   %d" , 5);
