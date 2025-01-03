@@ -1,5 +1,9 @@
 # MCU_DLT_LOGS_LIB
-DLTuc - it's a simple library to send DLT logs from MCU like STM32 or any other MCU. The logs may be send through serial communication interface like USART/UART. Each message is stored in a ring buffer, then transmitted. Thanks to this approach, a queue of messages to send is created
+DLTuc - it's a simple library that allows sending logs that are partially compatible with the "DLT logs" that are defined in Autosar standard, from an MCU such as STM32 or any other MCU.  
+
+The main motivation for creating this small pseudo library was the desire to send logs and be able to display them in the "DLT Viewer" where I could conveniently filter and highlight selected ones.  
+
+The logs may be send through serial communication interface like USART/UART. Each message is stored in a ring buffer, then transmitted. Thanks to this approach, a queue of messages to send is created.  
 
 **_Lib. source files are located in: src/*_**
 
